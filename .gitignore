@@ -1,0 +1,46 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Frontend
+node_modules
+dist
+dist-ssr
+*.local
+
+# Laravel Backend
+travelviet-api/vendor
+travelviet-api/.env
+travelviet-api/storage/*.key
+travelviet-api/storage/logs/*
+travelviet-api/storage/framework/cache/*
+travelviet-api/storage/framework/sessions/*
+travelviet-api/storage/framework/views/*
+travelviet-api/bootstrap/cache/*
+!travelviet-api/storage/logs/.gitkeep
+!travelviet-api/storage/framework/cache/.gitkeep
+!travelviet-api/storage/framework/sessions/.gitkeep
+!travelviet-api/storage/framework/views/.gitkeep
+!travelviet-api/bootstrap/cache/.gitkeep
+
+# Automation test vendor
+travelviet-automation-test/vendor
+
+# Selenium test build
+selenium-tests/java-tests/target
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
