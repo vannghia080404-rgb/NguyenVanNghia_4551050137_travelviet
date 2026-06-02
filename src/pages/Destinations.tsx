@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { MapPin, ArrowRight, Compass, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { tours } from "@/data/tours";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
 import heroImage from "@/assets/hero-halong1111.jpg";
 import tourHoian from "@/assets/tour-hoian.jpg";
@@ -56,24 +56,37 @@ const destinationGrid = [
 ];
 
 const Destinations = () => {
-  const { data: featuredTours, isLoading } = useQuery({
+  const {
+    data,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+  } = useInfiniteQuery({
     queryKey: ["featured-tours"],
-    queryFn: async () => {
-      const res = await api.get("/tours?featured=true");
-      return res.data.data || [];
+    queryFn: async ({ pageParam = 1 }) => {
+      const res = await api.get(`/tours?featured=true&per_page=8&page=${pageParam}`);
+      return res.data;
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      if (lastPage.meta.current_page < lastPage.meta.last_page) {
+        return lastPage.meta.current_page + 1;
+      }
+      return undefined;
     },
   });
 
-  const displayTours = (featuredTours && Array.isArray(featuredTours))
-    ? featuredTours.slice(0, 8).map((t: any) => ({
-        name: t.name,
-        province: t.destination?.name || "Việt Nam",
-        image: t.image || heroImage,
-        tours: t.duration || "", // reuse tours field for duration text
-        region: t.region || t.destination?.region || "Miền Nam",
-        slug: t.slug
-      }))
-    : [];
+  const featuredTours = data?.pages.flatMap((page) => page.data) || [];
+
+  const displayTours = featuredTours.map((t: any) => ({
+    name: t.name,
+    province: t.destination?.name || "Việt Nam",
+    image: t.image || heroImage,
+    tours: t.duration || "", // reuse tours field for duration text
+    region: t.region || t.destination?.region || "Miền Nam",
+    slug: t.slug
+  }));
 
   return (
     <main className="bg-background">
@@ -172,6 +185,22 @@ const Destinations = () => {
                   </div>
                 </Link>
               ))}
+            </div>
+          )}
+
+          {hasNextPage && (
+            <div className="mt-10 flex justify-center">
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => fetchNextPage()}
+                disabled={isFetchingNextPage}
+              >
+                {isFetchingNextPage ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : null}
+                Xem thêm tour
+              </Button>
             </div>
           )}
         </div>

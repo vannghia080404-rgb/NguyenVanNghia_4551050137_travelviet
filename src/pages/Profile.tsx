@@ -7,6 +7,7 @@ import { useMutation } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { toast } from "sonner";
 import ProfileLayout from "@/components/layout/ProfileLayout";
+import { validateImageFile } from "@/lib/utils";
 
 // Compute member tier based on total spending
 function getMemberTier(totalSpent: number = 0) {
@@ -46,6 +47,13 @@ const Profile = () => {
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !canUpload) return;
+    
+    const { valid, error } = validateImageFile(file);
+    if (!valid) {
+      toast.error(error);
+      return;
+    }
+
     const formData = new FormData();
     formData.append('avatar', file);
     setAvatarUploading(true);

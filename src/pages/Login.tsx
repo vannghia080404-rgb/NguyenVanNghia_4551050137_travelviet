@@ -24,7 +24,6 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [otp, setOtp] = useState("");
-  const [devOtp, setDevOtp] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -110,7 +109,6 @@ const Login = () => {
       const response = await api.post("/auth/resend-otp", { email: targetEmail });
       if (response.data.success) {
         toast({ title: "Đã gửi lại", description: "Vui lòng kiểm tra email của bạn." });
-        if (response.data.dev_otp) setDevOtp(response.data.dev_otp);
       }
     } catch (error: any) {
       toast({ variant: "destructive", description: "Không thể gửi lại mã." });
@@ -221,9 +219,6 @@ const Login = () => {
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
                 className="text-center text-2xl tracking-widest h-14 font-mono"
               />
-              {devOtp && (
-                <p className="text-xs text-warning text-center mt-2">(Dev Mode) Mã OTP của bạn là: <strong className="font-mono text-base">{devOtp}</strong></p>
-              )}
             </div>
             <Button type="submit" variant="hero" className="w-full h-12" disabled={isVerifying || otp.length !== 6}>
               {isVerifying ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : "Xác thực tài khoản"}

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import api from "@/lib/api";
+import { sanitizeHTML } from "@/lib/utils";
 import heroImage from "@/assets/hero-halong1111.jpg";
 import tourHoian from "@/assets/tour-hoian.jpg";
 import tourFood from "@/assets/tour-food.jpg";
@@ -79,7 +80,7 @@ const About = () => {
             {settings.page_about ? (
               <div
                 className="mt-6 text-muted-foreground leading-relaxed prose prose-sm max-w-none"
-                dangerouslySetInnerHTML={{ __html: settings.page_about }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHTML(settings.page_about) }}
               />
             ) : (
               <div className="mt-6 space-y-4 text-muted-foreground leading-relaxed">

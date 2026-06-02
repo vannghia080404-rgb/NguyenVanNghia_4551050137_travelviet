@@ -82,4 +82,10 @@ class WishlistController extends Controller
 
         return response()->json(['success' => true, 'liked' => $liked]);
     }
+
+    public function clearAll(Request $request)
+    {
+        $request->user()->wishlists()->delete();
+        return response()->json(['success' => true, 'message' => 'Đã xóa tất cả']);
+    }
 }

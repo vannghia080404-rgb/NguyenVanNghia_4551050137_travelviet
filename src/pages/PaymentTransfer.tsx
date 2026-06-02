@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { formatVND } from "@/components/TourCard";
 import { useToast } from "@/hooks/use-toast";
 import api from "@/lib/api";
+import { validateImageFile } from "@/lib/utils";
 
 const PaymentTransfer = () => {
   const { bookingId } = useParams();
@@ -45,8 +46,9 @@ const PaymentTransfer = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
-      if (selectedFile.size > 5 * 1024 * 1024) {
-        toast({ variant: "destructive", title: "File quá lớn", description: "Vui lòng chọn ảnh nhỏ hơn 5MB." });
+      const { valid, error } = validateImageFile(selectedFile);
+      if (!valid) {
+        toast({ variant: "destructive", title: "Lỗi file", description: error });
         return;
       }
       setFile(selectedFile);

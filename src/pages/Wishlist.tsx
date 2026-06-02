@@ -33,8 +33,7 @@ const Wishlist = () => {
 
   // Clear all tours
   const clearAllMutation = useMutation({
-    mutationFn: () =>
-      Promise.all(wishlist.map((tour) => api.delete(`/wishlist/${tour.id}`))),
+    mutationFn: () => api.delete('/wishlist/clear-all'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["wishlist"] });
       toast.success("Đã xóa tất cả tour yêu thích");

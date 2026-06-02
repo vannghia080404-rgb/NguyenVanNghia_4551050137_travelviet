@@ -1,5 +1,8 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { registerSchema, RegisterFormValues } from "@/lib/schemas";
 import { Mail, Lock, Eye, EyeOff, User, Phone, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -21,17 +24,11 @@ import logoLeaf from "@/assets/logo-leaf.png";
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [agreed, setAgreed] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [otp, setOtp] = useState("");
-  const [devOtp, setDevOtp] = useState("");
   const [registeredEmail, setRegisteredEmail] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
 
@@ -40,40 +37,26 @@ const Register = () => {
   const loginAction = useAuthStore((state) => state.login);
   const { settings, fetchSettings } = useSettingsStore();
 
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
+      password: "",
+      confirmPassword: ""
+    }
+  });
+
   useEffect(() => {
     fetchSettings();
   }, []);
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!name || !email || !password) {
-      toast({
-        variant: "destructive",
-        title: "Lỗi",
-        description: "Vui lòng nhập đầy đủ họ tên, email và mật khẩu",
-      });
-      return;
-    }
-
-    if (password.length < 6) {
-      toast({
-        variant: "destructive",
-        title: "Lỗi",
-        description: "Mật khẩu phải có ít nhất 6 ký tự",
-      });
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      toast({
-        variant: "destructive",
-        title: "Lỗi",
-        description: "Mật khẩu xác nhận không khớp",
-      });
-      return;
-    }
-
+  const onSubmit = async (data: RegisterFormValues) => {
     if (!agreed) {
       toast({
         variant: "destructive",
@@ -85,11 +68,15 @@ const Register = () => {
 
     setIsLoading(true);
     try {
-      const response = await api.post("/auth/register", { name, email, phone, password });
+      const response = await api.post("/auth/register", { 
+        name: data.name, 
+        email: data.email, 
+        phone: data.phone, 
+        password: data.password 
+      });
 
       if (response.data.success) {
         setRegisteredEmail(response.data.email);
-        if (response.data.dev_otp) setDevOtp(response.data.dev_otp);
         setShowOtpModal(true);
       }
     } catch (error: any) {
@@ -145,7 +132,6 @@ const Register = () => {
       const response = await api.post("/auth/resend-otp", { email: registeredEmail });
       if (response.data.success) {
         toast({ title: "Đã gửi lại", description: "Vui lòng kiểm tra email của bạn." });
-        if (response.data.dev_otp) setDevOtp(response.data.dev_otp);
       }
     } catch (error: any) {
       toast({ variant: "destructive", description: "Không thể gửi lại mã." });
@@ -202,7 +188,7 @@ const Register = () => {
           <h1 className="mt-10 font-display text-3xl md:text-4xl font-bold text-foreground">Tạo tài khoản</h1>
           <p className="mt-3 text-muted-foreground">Đăng ký miễn phí để nhận ưu đãi và đặt tour dễ dàng hơn.</p>
 
-          <form className="mt-8 space-y-4" onSubmit={handleRegister}>
+          <form className="mt-8 space-y-4" onSubmit={handleSubmit(onSubmit)}>
             <div>
               <label className="text-sm font-medium text-foreground">Họ và tên</label>
               <div className="mt-1.5 relative">
@@ -210,10 +196,10 @@ const Register = () => {
                 <Input
                   placeholder="Hãy điền họ và tên của bạn..."
                   className="pl-10 h-12"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  {...register("name")}
                 />
               </div>
+              {errors.name && <p className="text-xs text-destructive mt-1.5">{errors.name.message}</p>}
             </div>
 
             <div className="grid sm:grid-cols-2 gap-4">
@@ -225,10 +211,10 @@ const Register = () => {
                     type="email"
                     placeholder="Hãy điền địa chỉ email của bạn..."
                     className="pl-10 h-12"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    {...register("email")}
                   />
                 </div>
+                {errors.email && <p className="text-xs text-destructive mt-1.5">{errors.email.message}</p>}
               </div>
               <div>
                 <label className="text-sm font-medium text-foreground">Số điện thoại</label>
@@ -238,10 +224,10 @@ const Register = () => {
                     type="tel"
                     placeholder="Hãy điền số điện thoại của bạn..."
                     className="pl-10 h-12"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    {...register("phone")}
                   />
                 </div>
+                {errors.phone && <p className="text-xs text-destructive mt-1.5">{errors.phone.message}</p>}
               </div>
             </div>
 
@@ -254,8 +240,7 @@ const Register = () => {
                     type={showPassword ? "text" : "password"}
                     placeholder="Mật khẩu (tối thiểu 6 ký tự)"
                     className="pl-10 pr-10 h-12"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    {...register("password")}
                   />
                   <button
                     type="button"
@@ -265,6 +250,7 @@ const Register = () => {
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
+                {errors.password && <p className="text-xs text-destructive mt-1.5">{errors.password.message}</p>}
               </div>
               <div>
                 <label className="text-sm font-medium text-foreground">Xác nhận mật khẩu</label>
@@ -274,10 +260,10 @@ const Register = () => {
                     type={showPassword ? "text" : "password"}
                     placeholder="Nhập lại mật khẩu"
                     className="pl-10 pr-10 h-12"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    {...register("confirmPassword")}
                   />
                 </div>
+                {errors.confirmPassword && <p className="text-xs text-destructive mt-1.5">{errors.confirmPassword.message}</p>}
               </div>
             </div>
 
@@ -334,9 +320,6 @@ const Register = () => {
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
                 className="text-center text-2xl tracking-widest h-14 font-mono"
               />
-              {devOtp && (
-                <p className="text-xs text-warning text-center mt-2">(Dev Mode) Mã OTP của bạn là: <strong className="font-mono text-base">{devOtp}</strong></p>
-              )}
             </div>
             <Button type="submit" variant="hero" className="w-full h-12" disabled={isVerifying || otp.length !== 6}>
               {isVerifying ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : "Xác thực tài khoản"}

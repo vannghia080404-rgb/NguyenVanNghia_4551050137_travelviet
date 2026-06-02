@@ -8,6 +8,7 @@ import { useMutation } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { Loader2 } from "lucide-react";
 import tourSapa from "@/assets/tour-sapa.jpg";
+import { sanitizeHTML } from "@/lib/utils";
 
 import { useSettingsStore } from "@/store/useSettingsStore";
 
@@ -143,7 +144,7 @@ const Contact = () => {
           <div className="rounded-2xl overflow-hidden shadow-card border border-border/50 h-[360px] relative group">
             {settings.company_map ? (
               settings.company_map.trim().startsWith("<iframe") ? (
-                <div dangerouslySetInnerHTML={{ __html: settings.company_map }} className="w-full h-full [&>iframe]:w-full [&>iframe]:h-full [&>iframe]:border-0" />
+                <div dangerouslySetInnerHTML={{ __html: sanitizeHTML(settings.company_map) }} className="w-full h-full [&>iframe]:w-full [&>iframe]:h-full [&>iframe]:border-0" />
               ) : (
                 <iframe
                   title="TravelViet office"

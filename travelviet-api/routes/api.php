@@ -54,6 +54,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/wishlist', [WishlistController::class, 'index']);
     Route::post('/wishlist/toggle', [WishlistController::class, 'toggle']);
     Route::post('/wishlist/toggle/{tourId}', [WishlistController::class, 'toggle']);
+    Route::delete('/wishlist/clear-all', [WishlistController::class, 'clearAll']);
     Route::delete('/wishlist/{tourId}', [WishlistController::class, 'destroy']);
     Route::get('/wishlist/check/{tourId}', [WishlistController::class, 'check']);
 

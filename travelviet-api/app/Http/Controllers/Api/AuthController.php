@@ -58,9 +58,7 @@ class AuthController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Đăng ký thành công. Vui lòng kiểm tra email để nhận mã xác thực.',
-            'email' => $user->email,
-            // Trả về OTP trong response TẠM THỜI để tiện dev (không dùng cho production)
-            'dev_otp' => env('APP_ENV') === 'local' ? $otp : null
+            'email' => $user->email
         ], 201);
     }
 
@@ -129,8 +127,7 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Mã xác nhận mới đã được gửi.',
-            'dev_otp' => env('APP_ENV') === 'local' ? $otp : null
+            'message' => 'Mã xác nhận mới đã được gửi.'
         ]);
     }
 
@@ -359,8 +356,7 @@ class AuthController extends Controller
 
         return response()->json([
             'success'  => true,
-            'message'  => 'Mã OTP đặt lại mật khẩu đã được gửi đến email của bạn.',
-            'dev_otp'  => env('APP_ENV') === 'local' ? $otp : null,
+            'message'  => 'Mã OTP đặt lại mật khẩu đã được gửi đến email của bạn.'
         ]);
     }
 
