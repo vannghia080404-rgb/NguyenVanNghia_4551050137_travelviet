@@ -115,7 +115,7 @@ const Header = () => {
                     {user.avatar ? (
                       <div className="h-6 w-6 rounded-full overflow-hidden border border-border/80 shrink-0">
                         <img 
-                          src={user.avatar.startsWith('/storage') ? `http://localhost:8000${user.avatar}` : user.avatar} 
+                          src={user.avatar.startsWith('/storage') ? `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8000'}${user.avatar}` : user.avatar} 
                           alt={user.name} 
                           className="h-full w-full object-cover" 
                         />
