@@ -305,11 +305,14 @@ class BookingController extends Controller
 
         if ($request->hasFile('receipt')) {
             $file = $request->file('receipt');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $path = $file->storeAs('receipts', $filename, 'public');
+            
+            // Upload to Cloudinary
+            $uploadedUrl = cloudinary()->upload($file->getRealPath(), [
+                'folder' => 'travelviet/receipts'
+            ])->getSecurePath();
 
             $booking->update([
-                'payment_receipt' => '/storage/' . $path,
+                'payment_receipt' => $uploadedUrl,
             ]);
 
             return response()->json([

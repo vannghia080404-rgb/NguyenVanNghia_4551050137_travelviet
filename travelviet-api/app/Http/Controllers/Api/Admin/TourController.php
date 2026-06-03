@@ -83,6 +83,7 @@ class TourController extends Controller
         ]);
 
         if ($validator->fails()) {
+            \Illuminate\Support\Facades\Log::error('Validation Failed in Store:', $validator->errors()->toArray());
             return response()->json([
                 'success' => false,
                 'message' => 'Validation failed',
@@ -95,8 +96,9 @@ class TourController extends Controller
             $imagePath = null;
             if ($request->hasFile('image')) {
                 $file = $request->file('image');
-                $filename = time() . '_' . Str::slug($request->name) . '.' . $file->getClientOriginalExtension();
-                $imagePath = $file->storeAs('tours', $filename, 'public');
+                $imagePath = cloudinary()->upload($file->getRealPath(), [
+                    'folder' => 'travelviet/tours'
+                ])->getSecurePath();
             }
 
             $slug = Str::slug($request->name);
@@ -117,7 +119,7 @@ class TourController extends Controller
                 'max_slots' => $request->max_slots,
                 'badge' => $request->badge,
                 'featured' => $request->has('featured') ? filter_var($request->featured, FILTER_VALIDATE_BOOLEAN) : false,
-                'image' => $imagePath ? '/storage/' . $imagePath : null,
+                'image' => $imagePath ? $imagePath : null,
                 'description' => $request->description,
                 'highlights' => $request->highlights ?? [],
                 'essentials' => $request->essentials ?? [],
@@ -149,11 +151,12 @@ class TourController extends Controller
             // Upload gallery images
             if ($request->hasFile('gallery')) {
                 foreach ($request->file('gallery') as $file) {
-                    $filename = time() . '_' . Str::random(6) . '.' . $file->getClientOriginalExtension();
-                    $gPath = $file->storeAs('tours', $filename, 'public');
+                    $gPath = cloudinary()->upload($file->getRealPath(), [
+                        'folder' => 'travelviet/gallery'
+                    ])->getSecurePath();
                     TourImage::create([
                         'tour_id' => $tour->id,
-                        'image_path' => '/storage/' . $gPath,
+                        'image_path' => $gPath,
                     ]);
                 }
             }
@@ -216,16 +219,12 @@ class TourController extends Controller
         try {
             // Handle image replacement
             if ($request->hasFile('image')) {
-                // Delete old image if exists
-                if ($tour->image) {
-                    $oldPath = str_replace('/storage/', '', $tour->image);
-                    Storage::disk('public')->delete($oldPath);
-                }
-
+                // Ignore local delete for now
                 $file = $request->file('image');
-                $filename = time() . '_' . Str::slug($request->name) . '.' . $file->getClientOriginalExtension();
-                $imagePath = $file->storeAs('tours', $filename, 'public');
-                $tour->image = '/storage/' . $imagePath;
+                $imagePath = cloudinary()->upload($file->getRealPath(), [
+                    'folder' => 'travelviet/tours'
+                ])->getSecurePath();
+                $tour->image = $imagePath;
             }
 
             $tour->update([
@@ -272,8 +271,7 @@ class TourController extends Controller
             // Delete removed images
             foreach ($tour->images as $img) {
                 if (!in_array($img->image_path, $existingGallery)) {
-                    $oldPath = str_replace('/storage/', '', $img->image_path);
-                    Storage::disk('public')->delete($oldPath);
+                    // Ignore local delete
                     $img->delete();
                 }
             }
@@ -281,11 +279,12 @@ class TourController extends Controller
             // Upload new gallery images
             if ($request->hasFile('gallery')) {
                 foreach ($request->file('gallery') as $file) {
-                    $filename = time() . '_' . Str::random(6) . '.' . $file->getClientOriginalExtension();
-                    $gPath = $file->storeAs('tours', $filename, 'public');
+                    $gPath = cloudinary()->upload($file->getRealPath(), [
+                        'folder' => 'travelviet/gallery'
+                    ])->getSecurePath();
                     TourImage::create([
                         'tour_id' => $tour->id,
-                        'image_path' => '/storage/' . $gPath,
+                        'image_path' => $gPath,
                     ]);
                 }
             }
@@ -312,17 +311,10 @@ class TourController extends Controller
             $tour = Tour::findOrFail($id);
 
             // Delete image if exists
-            if ($tour->image) {
-                $imagePath = str_replace('/storage/', '', $tour->image);
-                Storage::disk('public')->delete($imagePath);
-            }
-
+            // Ignore cloud delete to keep it simple
+            
             // Delete tour images
             foreach ($tour->images as $img) {
-                if ($img->image_path) {
-                    $imagePath = str_replace('/storage/', '', $img->image_path);
-                    Storage::disk('public')->delete($imagePath);
-                }
                 $img->delete();
             }
 
@@ -364,12 +356,13 @@ class TourController extends Controller
             $uploadedImages = [];
 
             foreach ($request->file('images') as $file) {
-                $filename = time() . '_' . Str::random(6) . '.' . $file->getClientOriginalExtension();
-                $imagePath = $file->storeAs('tours', $filename, 'public');
+                $imagePath = cloudinary()->upload($file->getRealPath(), [
+                    'folder' => 'travelviet/gallery'
+                ])->getSecurePath();
 
                 $tourImage = TourImage::create([
                     'tour_id' => $tour->id,
-                    'image_path' => '/storage/' . $imagePath,
+                    'image_path' => $imagePath,
                 ]);
 
                 $uploadedImages[] = $tourImage;

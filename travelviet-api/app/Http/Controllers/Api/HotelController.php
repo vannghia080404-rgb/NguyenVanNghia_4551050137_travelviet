@@ -90,9 +90,10 @@ class HotelController extends Controller
         // Handle image upload
         if ($request->hasFile('image')) {
             $file = $request->file('image');
-            $filename = time() . '_' . Str::slug($request->name) . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('hotels', $filename, 'public');
-            $data['image'] = '/storage/' . $path;
+            $imagePath = cloudinary()->upload($file->getRealPath(), [
+                'folder' => 'travelviet/hotels'
+            ])->getSecurePath();
+            $data['image'] = $imagePath;
         }
 
         $data['status'] = $data['status'] ?? 'active';
@@ -159,15 +160,12 @@ class HotelController extends Controller
 
         // Handle image upload
         if ($request->hasFile('image')) {
-            // Delete old image if exists
-            if ($hotel->image) {
-                $oldPath = str_replace('/storage/', '', $hotel->image);
-                Storage::disk('public')->delete($oldPath);
-            }
+            // Ignore local delete
             $file = $request->file('image');
-            $filename = time() . '_' . Str::slug($request->name ?? $hotel->name) . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('hotels', $filename, 'public');
-            $data['image'] = '/storage/' . $path;
+            $imagePath = cloudinary()->upload($file->getRealPath(), [
+                'folder' => 'travelviet/hotels'
+            ])->getSecurePath();
+            $data['image'] = $imagePath;
         }
 
         \Illuminate\Support\Facades\Log::info('Hotel update data: ' . json_encode($data));
@@ -185,10 +183,7 @@ class HotelController extends Controller
         $hotel = Hotel::findOrFail($hotelId);
 
         // Delete image if exists
-        if ($hotel->image) {
-            $oldPath = str_replace('/storage/', '', $hotel->image);
-            Storage::disk('public')->delete($oldPath);
-        }
+        // Ignore local delete
 
         $hotel->delete();
         return response()->json(['success' => true, 'message' => 'Đã xóa khách sạn.']);

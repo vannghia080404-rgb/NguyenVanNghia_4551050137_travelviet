@@ -269,13 +269,14 @@ class AuthController extends Controller
         $user = $request->user();
         
         // Delete old avatar if exists
-        if ($user->avatar && str_starts_with($user->avatar, '/storage/')) {
-            $old = str_replace('/storage/', '', $user->avatar);
-            Storage::disk('public')->delete($old);
-        }
+        // Ignore local delete
         
-        $path = $request->file('avatar')->store('avatars', 'public');
-        $user->update(['avatar' => '/storage/' . $path]);
+        $file = $request->file('avatar');
+        $imagePath = cloudinary()->upload($file->getRealPath(), [
+            'folder' => 'travelviet/avatars'
+        ])->getSecurePath();
+        
+        $user->update(['avatar' => $imagePath]);
         
         return response()->json([
             'success' => true,
