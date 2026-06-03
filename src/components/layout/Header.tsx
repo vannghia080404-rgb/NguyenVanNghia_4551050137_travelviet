@@ -195,13 +195,63 @@ const Header = () => {
                 {link.label}
               </Link>
             ))}
-            <div className="flex gap-2 pt-2 border-t border-border mt-2">
-              <Button asChild variant="ghost" size="sm" className="flex-1">
-                <Link to="/login" onClick={() => setOpen(false)}>Đăng nhập</Link>
-              </Button>
-              <Button asChild variant="accent" size="sm" className="flex-1">
-                <Link to="/register" onClick={() => setOpen(false)}>Đăng ký</Link>
-              </Button>
+            <div className="flex flex-col gap-2 pt-2 border-t border-border mt-2">
+              {isAuthenticated && user ? (
+                <>
+                  <div className="flex items-center gap-3 px-2 py-1 mb-2">
+                    {user.avatar ? (
+                      <div className="h-8 w-8 rounded-full overflow-hidden border border-border/80 shrink-0">
+                        <img 
+                          src={user.avatar.startsWith('/storage') ? `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8000'}${user.avatar}` : user.avatar} 
+                          alt={user.name} 
+                          className="h-full w-full object-cover" 
+                        />
+                      </div>
+                    ) : (
+                      <User className="h-8 w-8 shrink-0 text-muted-foreground bg-secondary rounded-full p-1.5" />
+                    )}
+                    <div className="flex flex-col">
+                      <span className="font-medium text-sm text-foreground">{user.name}</span>
+                      <span className="text-xs text-muted-foreground truncate">{user.email}</span>
+                    </div>
+                  </div>
+                  {user.role === 'admin' && (
+                    <Link to="/admin" onClick={() => setOpen(false)} className="py-2 text-sm font-medium text-muted-foreground hover:text-primary">Quản trị viên</Link>
+                  )}
+                  <Link to="/profile" onClick={() => setOpen(false)} className="py-2 text-sm font-medium text-muted-foreground hover:text-primary">Hồ sơ cá nhân</Link>
+                  <Link to="/profile/orders" onClick={() => setOpen(false)} className="py-2 text-sm font-medium text-muted-foreground hover:text-primary">Đơn hàng của tôi</Link>
+                  <Link to="/wishlist" onClick={() => setOpen(false)} className="py-2 text-sm font-medium text-muted-foreground hover:text-primary flex items-center justify-between">
+                    Tour yêu thích
+                    {wishlistCount > 0 && <span className="bg-destructive text-white text-[10px] px-2 py-0.5 rounded-full">{wishlistCount}</span>}
+                  </Link>
+                  <Link to="/profile/notifications" onClick={() => setOpen(false)} className="py-2 text-sm font-medium text-muted-foreground hover:text-primary flex items-center justify-between">
+                    Thông báo
+                    {unreadCount > 0 && <span className="bg-primary text-white text-[10px] px-2 py-0.5 rounded-full">{unreadCount}</span>}
+                  </Link>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="justify-start px-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                    onClick={async () => {
+                      await logout();
+                      setOpen(false);
+                      window.location.href = "/";
+                    }}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Đăng xuất
+                  </Button>
+                </>
+              ) : (
+                <div className="flex gap-2">
+                  <Button asChild variant="ghost" size="sm" className="flex-1">
+                    <Link to="/login" onClick={() => setOpen(false)}>Đăng nhập</Link>
+                  </Button>
+                  <Button asChild variant="accent" size="sm" className="flex-1">
+                    <Link to="/register" onClick={() => setOpen(false)}>Đăng ký</Link>
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>
