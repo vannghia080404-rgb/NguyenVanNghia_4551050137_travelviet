@@ -34,5 +34,5 @@ export function getImageUrl(path: string | null | undefined): string {
   
   // Clean up double slashes
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
-  return `http://127.0.0.1:8000${cleanPath}`;
+  return `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://127.0.0.1:8000'}${cleanPath}`;
 }
