@@ -148,5 +148,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/promotions', [LoyaltyController::class, 'storePromotion']);
         Route::put('/promotions/{id}', [LoyaltyController::class, 'updatePromotion']);
         Route::delete('/promotions/{id}', [LoyaltyController::class, 'destroyPromotion']);
+
+        // Shop Management (Admin)
+        Route::get('/shop/products', [\App\Http\Controllers\AdminShopController::class, 'index']);
+        Route::post('/shop/products', [\App\Http\Controllers\AdminShopController::class, 'store']);
+        Route::put('/shop/products/{id}', [\App\Http\Controllers\AdminShopController::class, 'update']);
+        Route::delete('/shop/products/{id}', [\App\Http\Controllers\AdminShopController::class, 'destroy']);
     });
 });

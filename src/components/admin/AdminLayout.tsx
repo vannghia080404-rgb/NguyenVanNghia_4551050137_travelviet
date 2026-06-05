@@ -16,6 +16,7 @@ const navItems = [
   { to: "/admin", icon: LayoutDashboard, label: "Dashboard", end: true },
   { to: "/admin/tours", icon: Ticket, label: "Quản lý Tour" },
   { to: "/admin/destinations", icon: MapPin, label: "Quản lý địa danh" },
+  { to: "/admin/shop/products", icon: LayoutDashboard, label: "Sản phẩm Shop" },
   { to: "/admin/categories", icon: LayoutDashboard, label: "Danh mục tour" },
   { to: "/admin/hotels", icon: Building2, label: "Khách sạn" },
   { to: "/admin/bookings", icon: Calendar, label: "Đơn đặt chỗ" },
