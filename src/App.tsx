@@ -21,6 +21,7 @@ import Login from "./pages/Login.tsx";
 import Register from "./pages/Register.tsx";
 import ForgotPassword from "./pages/ForgotPassword.tsx";
 import ProfileOrders from "./pages/ProfileOrders.tsx";
+import ProfileShopOrders from "./pages/ProfileShopOrders.tsx";
 import Profile from "./pages/Profile.tsx";
 import ProfileNotifications from "./pages/ProfileNotifications.tsx";
 import ProfileSecurity from "./pages/ProfileSecurity.tsx";
@@ -47,6 +48,10 @@ import AdminRanks from "./pages/admin/AdminRanks.tsx";
 import AdminPromotions from "./pages/admin/AdminPromotions.tsx";
 import AdminProducts from "./pages/admin/AdminProducts.tsx";
 import AdminProfile from "./pages/admin/AdminProfile.tsx";
+import Shop from "./pages/Shop.tsx";
+import ShopProductDetail from "./pages/ShopProductDetail.tsx";
+import ShopCart from "./pages/ShopCart.tsx";
+import ShopCheckout from "./pages/ShopCheckout.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 import { useSettingsStore } from "@/store/useSettingsStore";
@@ -100,7 +105,12 @@ const AnimatedRoutes = () => {
         <Route path="/login" element={<motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}><RenderedRoute><Login /></RenderedRoute></motion.div>} />
         <Route path="/register" element={<motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}><RenderedRoute><Register /></RenderedRoute></motion.div>} />
         <Route path="/forgot-password" element={<motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}><RenderedRoute><ForgotPassword /></RenderedRoute></motion.div>} />
+        <Route path="/shop" element={<motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}><RenderedRoute><Layout><Shop /></Layout></RenderedRoute></motion.div>} />
+        <Route path="/shop/:slug" element={<motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}><RenderedRoute><Layout><ShopProductDetail /></Layout></RenderedRoute></motion.div>} />
+        <Route path="/cart" element={<motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}><RenderedRoute><Layout><ProtectedRoute><ShopCart /></ProtectedRoute></Layout></RenderedRoute></motion.div>} />
+        <Route path="/checkout-shop" element={<motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}><RenderedRoute><Layout><ProtectedRoute><ShopCheckout /></ProtectedRoute></Layout></RenderedRoute></motion.div>} />
         <Route path="/profile/orders" element={<motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}><RenderedRoute><ProtectedRoute><ProfileOrders /></ProtectedRoute></RenderedRoute></motion.div>} />
+        <Route path="/profile/shop-orders" element={<motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}><RenderedRoute><ProtectedRoute><ProfileShopOrders /></ProtectedRoute></RenderedRoute></motion.div>} />
         <Route path="/profile" element={<motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}><RenderedRoute><ProtectedRoute><Profile /></ProtectedRoute></RenderedRoute></motion.div>} />
         <Route path="/profile/notifications" element={<motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}><RenderedRoute><ProtectedRoute><ProfileNotifications /></ProtectedRoute></RenderedRoute></motion.div>} />
         <Route path="/profile/security" element={<motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}><RenderedRoute><ProtectedRoute><ProfileSecurity /></ProtectedRoute></RenderedRoute></motion.div>} />

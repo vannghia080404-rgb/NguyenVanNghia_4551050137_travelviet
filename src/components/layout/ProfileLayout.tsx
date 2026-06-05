@@ -17,6 +17,7 @@ const ProfileLayout = ({ children, title }: { children: React.ReactNode, title: 
   const navItems = [
     { id: "overview", label: "Tổng quan", icon: User, to: "/profile" },
     { id: "orders", label: "Đơn đặt tour", icon: ShoppingBag, to: "/profile/orders" },
+    { id: "shop-orders", label: "Đơn mua sắm", icon: ShoppingBag, to: "/profile/shop-orders" },
     { id: "security", label: "Bảo mật", icon: Lock, to: "/profile/security" },
     { id: "notifications", label: "Cài đặt thông báo", icon: Bell, to: "/profile/notifications" },
   ];

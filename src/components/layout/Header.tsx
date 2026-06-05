@@ -1,5 +1,5 @@
 import { Link, NavLink as RouterNavLink, useLocation } from "react-router-dom";
-import { Menu, X, User, Heart, LogOut, Bell } from "lucide-react";
+import { Menu, X, User, Heart, LogOut, Bell, ShoppingBag } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -21,6 +21,7 @@ const links = [
   { to: "/tours", label: "Tours" },
   { to: "/destinations", label: "Điểm đến" },
   { to: "/promotions", label: "Khuyến mãi" },
+  { to: "/shop", label: "Cửa hàng" },
   { to: "/about", label: "Giới thiệu" },
   { to: "/contact", label: "Liên hệ" },
 ];
@@ -36,6 +37,13 @@ const Header = () => {
     enabled: isAuthenticated,
   });
   const wishlistCount = wishlistData?.length || 0;
+
+  const { data: cartData } = useQuery({
+    queryKey: ["cart"],
+    queryFn: () => api.get("/shop/cart").then((r) => r.data.data || []),
+    enabled: isAuthenticated,
+  });
+  const cartCount = cartData?.length || 0;
 
   const { data: unreadData } = useQuery({
     queryKey: ["notifications-unread"],
@@ -96,6 +104,14 @@ const Header = () => {
                 {wishlistCount > 0 && (
                   <span className="absolute -top-1.5 -right-2 h-4 w-4 rounded-full bg-destructive text-[10px] font-bold text-white flex items-center justify-center border border-background">
                     {wishlistCount > 9 ? '9+' : wishlistCount}
+                  </span>
+                )}
+              </Link>
+              <Link to="/cart" className="relative text-muted-foreground hover:text-primary transition-colors mt-1">
+                <ShoppingBag className="h-5 w-5" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1.5 -right-2 h-4 w-4 rounded-full bg-primary text-[10px] font-bold text-white flex items-center justify-center border border-background">
+                    {cartCount > 9 ? '9+' : cartCount}
                   </span>
                 )}
               </Link>
@@ -223,6 +239,10 @@ const Header = () => {
                   <Link to="/wishlist" onClick={() => setOpen(false)} className="py-2 text-sm font-medium text-muted-foreground hover:text-primary flex items-center justify-between">
                     Tour yêu thích
                     {wishlistCount > 0 && <span className="bg-destructive text-white text-[10px] px-2 py-0.5 rounded-full">{wishlistCount}</span>}
+                  </Link>
+                  <Link to="/cart" onClick={() => setOpen(false)} className="py-2 text-sm font-medium text-muted-foreground hover:text-primary flex items-center justify-between">
+                    Giỏ hàng Shop
+                    {cartCount > 0 && <span className="bg-primary text-white text-[10px] px-2 py-0.5 rounded-full">{cartCount}</span>}
                   </Link>
                   <Link to="/profile/notifications" onClick={() => setOpen(false)} className="py-2 text-sm font-medium text-muted-foreground hover:text-primary flex items-center justify-between">
                     Thông báo

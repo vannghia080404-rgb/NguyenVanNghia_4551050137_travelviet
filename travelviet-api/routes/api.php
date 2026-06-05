@@ -39,6 +39,10 @@ Route::get('/team-members', [TeamMemberController::class, 'index']);
 Route::get('/settings/global', [\App\Http\Controllers\Api\SettingController::class, 'getGlobalSettings']);
 Route::get('/promotions', [\App\Http\Controllers\Api\PublicPromotionController::class, 'index']);
 
+// Shop (Public)
+Route::get('/shop/products', [\App\Http\Controllers\ShopController::class, 'index']);
+Route::get('/shop/products/{slug}', [\App\Http\Controllers\ShopController::class, 'show']);
+
 // Tour sub-resources (public)
 Route::get('/tours/{tourId}/hotels', [HotelController::class, 'index']);
 Route::get('/tours/{tourId}/reviews', [ReviewController::class, 'index']);
@@ -49,6 +53,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/avatar', [AuthController::class, 'uploadAvatar']);
     Route::post('/auth/change-password', [AuthController::class, 'changePassword']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
+
+    // Shop Cart & Checkout (User)
+    Route::get('/shop/cart', [\App\Http\Controllers\ShopController::class, 'getCart']);
+    Route::post('/shop/cart', [\App\Http\Controllers\ShopController::class, 'addToCart']);
+    Route::delete('/shop/cart/{id}', [\App\Http\Controllers\ShopController::class, 'removeFromCart']);
+    Route::post('/shop/checkout', [\App\Http\Controllers\ShopController::class, 'checkout']);
+    Route::get('/shop/orders', [\App\Http\Controllers\ShopController::class, 'getOrders']);
 
     // Wishlist
     Route::get('/wishlist', [WishlistController::class, 'index']);
