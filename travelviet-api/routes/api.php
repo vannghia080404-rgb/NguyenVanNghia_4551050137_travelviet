@@ -165,5 +165,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/shop/products', [\App\Http\Controllers\AdminShopController::class, 'store']);
         Route::put('/shop/products/{id}', [\App\Http\Controllers\AdminShopController::class, 'update']);
         Route::delete('/shop/products/{id}', [\App\Http\Controllers\AdminShopController::class, 'destroy']);
+        
+        Route::get('/shop/orders', [\App\Http\Controllers\AdminShopController::class, 'getOrders']);
+        Route::put('/shop/orders/{id}/status', [\App\Http\Controllers\AdminShopController::class, 'updateOrderStatus']);
     });
 });

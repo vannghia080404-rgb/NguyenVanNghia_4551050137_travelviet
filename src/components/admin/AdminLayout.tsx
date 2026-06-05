@@ -1,7 +1,7 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { 
   LayoutDashboard, Ticket, Calendar, MessageSquare, Users, 
-  BarChart3, Bell, Search, Shield, MapPin, LogOut, ExternalLink, Home, Settings, Megaphone, UserSquare2, Building2
+  BarChart3, Bell, Search, Shield, MapPin, LogOut, ExternalLink, Home, Settings, Megaphone, UserSquare2, Building2, Package, ShoppingBag
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,8 @@ const navItems = [
   { to: "/admin", icon: LayoutDashboard, label: "Dashboard", end: true },
   { to: "/admin/tours", icon: Ticket, label: "Quản lý Tour" },
   { to: "/admin/destinations", icon: MapPin, label: "Quản lý địa danh" },
-  { to: "/admin/shop/products", icon: LayoutDashboard, label: "Sản phẩm Shop" },
+  { to: "/admin/shop/products", icon: Package, label: "Sản phẩm Shop" },
+  { to: "/admin/shop/orders", icon: ShoppingBag, label: "Đơn hàng Shop" },
   { to: "/admin/categories", icon: LayoutDashboard, label: "Danh mục tour" },
   { to: "/admin/hotels", icon: Building2, label: "Khách sạn" },
   { to: "/admin/bookings", icon: Calendar, label: "Đơn đặt chỗ" },

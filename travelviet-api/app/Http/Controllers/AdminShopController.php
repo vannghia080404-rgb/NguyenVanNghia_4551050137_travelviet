@@ -70,4 +70,20 @@ class AdminShopController extends Controller
         $product->delete();
         return response()->json(['success' => true]);
     }
+
+    // Shop Order Management
+    public function getOrders()
+    {
+        $orders = \App\Models\ShopOrder::with(['user', 'items.variant.product'])->orderBy('id', 'desc')->get();
+        return response()->json(['success' => true, 'data' => $orders]);
+    }
+
+    public function updateOrderStatus(Request $request, $id)
+    {
+        $request->validate(['status' => 'required|in:pending,shipping,completed,cancelled']);
+        $order = \App\Models\ShopOrder::findOrFail($id);
+        $order->status = $request->status;
+        $order->save();
+        return response()->json(['success' => true]);
+    }
 }
