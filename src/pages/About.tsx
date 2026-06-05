@@ -157,7 +157,7 @@ const About = () => {
         ) : (
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {team.map((m: any) => {
-              const imgSrc = m.image_url ? `http://localhost:8000${m.image_url}` : tourFood;
+              const imgSrc = m.image_url ? `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8000'}${m.image_url}` : tourFood;
               return (
                 <div key={m.id} className="group rounded-2xl overflow-hidden bg-card shadow-soft hover:shadow-card transition-smooth">
                   <div className="aspect-[4/3] overflow-hidden">

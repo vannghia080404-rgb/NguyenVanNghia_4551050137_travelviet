@@ -82,7 +82,8 @@ const Profile = () => {
   const getImageUrl = (source?: string | null) => {
     if (!source) return null;
     if (source.startsWith('http://') || source.startsWith('https://') || source.startsWith('data:') || source.startsWith('blob:')) return source;
-    if (source.startsWith('/storage')) return `http://localhost:8000${source}`;
+    const apiBase = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8000';
+    if (source.startsWith('/storage')) return `${apiBase}${source}`;
     // Trình duyệt không thể render đường dẫn ổ cứng (C:\...), trả về null để hiện chữ cái đầu
     if (source.includes(':\\')) return null; 
     return source;

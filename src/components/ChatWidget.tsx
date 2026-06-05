@@ -86,7 +86,7 @@ export default function ChatWidget() {
   const { user } = useAuthStore();
   const avatarUrl = user?.avatar
     ? (user.avatar.startsWith('/storage')
-      ? `http://localhost:8000${user.avatar}`
+      ? `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8000'}${user.avatar}`
       : user.avatar)
     : null;
 

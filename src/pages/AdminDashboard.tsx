@@ -96,7 +96,8 @@ const AdminDashboard = () => {
 
   const getTourImage = (url: string | undefined) => {
     if (!url) return heroImage;
-    return url.startsWith('http') ? url : `http://localhost:8000${url}`;
+    const apiBase = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8000';
+    return url.startsWith('http') ? url : `${apiBase}${url}`;
   };
 
   return (

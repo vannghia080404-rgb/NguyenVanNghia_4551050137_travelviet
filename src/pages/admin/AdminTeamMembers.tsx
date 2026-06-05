@@ -69,7 +69,8 @@ export default function AdminTeamMembers() {
   const startEdit = (m: TeamMember) => {
     setEditingId(m.id);
     setForm({ name: m.name, role: m.role, bio: m.bio || "", sort_order: m.sort_order });
-    setImagePreview(m.image_url ? `http://localhost:8000${m.image_url}` : null);
+    const apiBase = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8000';
+    setImagePreview(m.image_url ? `${apiBase}${m.image_url}` : null);
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -174,7 +175,7 @@ export default function AdminTeamMembers() {
                     <GripVertical className="h-4 w-4 text-muted-foreground/40 shrink-0" />
                     <div className="h-14 w-14 rounded-xl overflow-hidden bg-background shrink-0 border border-border/50">
                       {member.image_url ? (
-                        <img src={`http://localhost:8000${member.image_url}`} alt={member.name} className="h-full w-full object-cover" />
+                        <img src={`${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8000'}${member.image_url}`} alt={member.name} className="h-full w-full object-cover" />
                       ) : (
                         <div className="h-full w-full flex items-center justify-center text-muted-foreground font-bold text-xl bg-secondary/50">
                           {member.name.charAt(0)}
