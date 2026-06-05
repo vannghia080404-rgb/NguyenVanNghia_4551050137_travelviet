@@ -46,7 +46,8 @@ const STAFF_CONTACTS = [
 
 async function callGeminiAI(messages: { role: string; text: string }[]) {
   try {
-    const res = await fetch("http://localhost:8000/api/chatbot", {
+    const apiBase = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+    const res = await fetch(`${apiBase}/chatbot`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ messages }),
