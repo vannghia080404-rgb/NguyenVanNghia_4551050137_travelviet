@@ -108,17 +108,20 @@ class BookingController extends Controller
 
             DB::commit();
 
-            // Gửi email xác nhận đặt tour chạy ngầm sau khi trả kết quả về user (giúp frontend không bị treo)
-            try {
-                $userEmail = $request->user()->email;
-                $bookingId = $booking->id;
-                dispatch(function () use ($userEmail, $bookingId) {
-                    $b = \App\Models\Booking::with('tour', 'travelers', 'user')->find($bookingId);
-                    if ($b) Mail::to($userEmail)->send(new BookingConfirmationMail($b));
-                })->afterResponse();
-            } catch (\Exception $e) {
-                // Ignore mail errors so booking is still successful
-                \Log::error('Mail error: ' . $e->getMessage());
+            // Gửi email xác nhận đặt tour chạy ngầm (chỉ gửi luôn nếu không phải vnpay)
+            // Nếu là VNPay, hệ thống sẽ tự gửi email ở vnpayCallback sau khi khách thanh toán thành công
+            if (!$paymentMethod || $paymentMethod->type !== 'vnpay') {
+                try {
+                    $userEmail = $request->user()->email;
+                    $bookingId = $booking->id;
+                    dispatch(function () use ($userEmail, $bookingId) {
+                        $b = \App\Models\Booking::with('tour', 'travelers', 'user')->find($bookingId);
+                        if ($b) Mail::to($userEmail)->send(new BookingConfirmationMail($b));
+                    })->afterResponse();
+                } catch (\Exception $e) {
+                    // Ignore mail errors so booking is still successful
+                    \Log::error('Mail error: ' . $e->getMessage());
+                }
             }
 
             return response()->json([
