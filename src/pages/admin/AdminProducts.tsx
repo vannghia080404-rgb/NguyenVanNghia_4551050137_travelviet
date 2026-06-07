@@ -17,6 +17,11 @@ type ProductVariant = {
   image_file?: File;
 };
 
+type ProductImage = {
+  id: number;
+  image_url: string;
+};
+
 type Product = {
   id: number;
   name: string;
@@ -27,6 +32,7 @@ type Product = {
   image_url: string;
   is_active: boolean;
   variants: ProductVariant[];
+  images?: ProductImage[];
 };
 
 const emptyForm = { name: "", category: "Phụ kiện", base_price: "", description: "" };
@@ -39,6 +45,10 @@ export default function AdminProducts() {
   const [variants, setVariants] = useState<ProductVariant[]>([]);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const galleryRef = useRef<HTMLInputElement>(null);
+  const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
+  const [existingGallery, setExistingGallery] = useState<ProductImage[]>([]);
+  const [deletedImages, setDeletedImages] = useState<number[]>([]);
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-products"],
@@ -58,6 +68,9 @@ export default function AdminProducts() {
       
       if (imageFile) fd.append("image", imageFile);
       
+      galleryFiles.forEach(f => fd.append("gallery_images[]", f));
+      if (deletedImages.length > 0) fd.append("deleted_images", JSON.stringify(deletedImages));
+
       data.variants.forEach((v, index) => {
         if (v.image_file) {
           fd.append(`variant_image_${index}`, v.image_file);
@@ -92,6 +105,9 @@ export default function AdminProducts() {
     setEditingId(null);
     setImageFile(null);
     setImagePreview(null);
+    setGalleryFiles([]);
+    setExistingGallery([]);
+    setDeletedImages([]);
   };
 
   const startEdit = (p: Product) => {
@@ -99,6 +115,9 @@ export default function AdminProducts() {
     setForm({ name: p.name, category: p.category, base_price: p.base_price, description: p.description || "" });
     setVariants(p.variants || []);
     setImagePreview(p.image_url ? `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8000'}${p.image_url}` : null);
+    setExistingGallery(p.images || []);
+    setGalleryFiles([]);
+    setDeletedImages([]);
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -106,6 +125,20 @@ export default function AdminProducts() {
     if (!file) return;
     setImageFile(file);
     setImagePreview(URL.createObjectURL(file));
+  };
+
+  const handleGalleryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setGalleryFiles(prev => [...prev, ...files]);
+  };
+
+  const removeGalleryFile = (index: number) => {
+    setGalleryFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const removeExistingGallery = (id: number) => {
+    setDeletedImages(prev => [...prev, id]);
+    setExistingGallery(prev => prev.filter(img => img.id !== id));
   };
 
   const handleSave = () => {
@@ -144,6 +177,7 @@ export default function AdminProducts() {
 
             {/* Image upload */}
             <div className="mb-5 flex flex-col items-center">
+              <label className="text-sm font-semibold text-foreground/80 mb-2 w-full text-left">Ảnh đại diện sản phẩm *</label>
               <div
                 onClick={() => imgRef.current?.click()}
                 className="h-32 w-32 rounded-2xl overflow-hidden border-2 border-dashed border-border hover:border-primary bg-background flex items-center justify-center cursor-pointer transition-colors"
@@ -153,11 +187,40 @@ export default function AdminProducts() {
                 ) : (
                   <div className="text-center text-muted-foreground">
                     <ImagePlus className="h-8 w-8 mx-auto mb-1 text-muted-foreground/60" />
-                    <span className="text-xs">Tải ảnh lên</span>
+                    <span className="text-xs">Tải ảnh chính</span>
                   </div>
                 )}
               </div>
               <input ref={imgRef} type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+            </div>
+
+            {/* Gallery upload */}
+            <div className="mb-5">
+              <label className="text-sm font-semibold text-foreground/80 mb-2 flex justify-between items-center">
+                Ảnh album (Gallery)
+                <Button type="button" variant="outline" size="sm" onClick={() => galleryRef.current?.click()} className="h-7 text-xs px-2">
+                  <Plus className="h-3 w-3 mr-1" /> Thêm ảnh
+                </Button>
+              </label>
+              <input ref={galleryRef} type="file" multiple accept="image/*" className="hidden" onChange={handleGalleryChange} />
+              
+              <div className="flex flex-wrap gap-2 mt-2">
+                {existingGallery.map(img => (
+                  <div key={img.id} className="relative h-16 w-16 rounded-xl overflow-hidden border border-border">
+                    <img src={`${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8000'}${img.image_url}`} className="h-full w-full object-cover" alt="gallery" />
+                    <button type="button" onClick={() => removeExistingGallery(img.id)} className="absolute top-0 right-0 bg-red-500/80 text-white p-0.5 rounded-bl-lg hover:bg-red-500"><X className="h-3 w-3" /></button>
+                  </div>
+                ))}
+                {galleryFiles.map((file, index) => (
+                  <div key={index} className="relative h-16 w-16 rounded-xl overflow-hidden border border-border">
+                    <img src={URL.createObjectURL(file)} className="h-full w-full object-cover" alt="gallery" />
+                    <button type="button" onClick={() => removeGalleryFile(index)} className="absolute top-0 right-0 bg-red-500/80 text-white p-0.5 rounded-bl-lg hover:bg-red-500"><X className="h-3 w-3" /></button>
+                  </div>
+                ))}
+                {existingGallery.length === 0 && galleryFiles.length === 0 && (
+                  <div className="text-xs text-muted-foreground italic w-full p-3 bg-secondary/30 rounded-lg text-center border border-dashed border-border">Chưa có ảnh gallery nào</div>
+                )}
+              </div>
             </div>
 
             <div className="space-y-4">

@@ -12,7 +12,7 @@ class ShopController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::where('is_active', true)->with('variants');
+        $query = Product::where('is_active', true)->with(['variants', 'images']);
         if ($request->has('category') && $request->category !== 'all') {
             $query->where('category', $request->category);
         }
@@ -21,7 +21,7 @@ class ShopController extends Controller
 
     public function show($slug)
     {
-        $product = Product::where('slug', $slug)->with('variants')->firstOrFail();
+        $product = Product::where('slug', $slug)->with(['variants', 'images'])->firstOrFail();
         return response()->json(['success' => true, 'data' => $product]);
     }
 

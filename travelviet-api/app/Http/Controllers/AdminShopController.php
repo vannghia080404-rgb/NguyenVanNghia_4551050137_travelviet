@@ -8,7 +8,7 @@ class AdminShopController extends Controller
 {
     public function index()
     {
-        $products = \App\Models\Product::with('variants')->orderBy('id', 'desc')->get();
+        $products = \App\Models\Product::with(['variants', 'images'])->orderBy('id', 'desc')->get();
         return response()->json(['success' => true, 'data' => $products]);
     }
 
@@ -41,7 +41,14 @@ class AdminShopController extends Controller
             }
         }
 
-        return response()->json(['success' => true, 'data' => $product->load('variants')]);
+        if ($request->hasFile('gallery_images')) {
+            foreach($request->file('gallery_images') as $file) {
+                $path = $file->store('shop/gallery', 'public');
+                $product->images()->create(['image_url' => '/storage/' . $path]);
+            }
+        }
+
+        return response()->json(['success' => true, 'data' => $product->load(['variants', 'images'])]);
     }
 
     public function update(Request $request, $id)
@@ -70,7 +77,19 @@ class AdminShopController extends Controller
             }
         }
 
-        return response()->json(['success' => true, 'data' => $product->load('variants')]);
+        if ($request->has('deleted_images')) {
+            $deletedImageIds = json_decode($request->deleted_images, true);
+            \App\Models\ProductImage::whereIn('id', $deletedImageIds)->delete();
+        }
+
+        if ($request->hasFile('gallery_images')) {
+            foreach($request->file('gallery_images') as $file) {
+                $path = $file->store('shop/gallery', 'public');
+                $product->images()->create(['image_url' => '/storage/' . $path]);
+            }
+        }
+
+        return response()->json(['success' => true, 'data' => $product->load(['variants', 'images'])]);
     }
 
     public function destroy($id)

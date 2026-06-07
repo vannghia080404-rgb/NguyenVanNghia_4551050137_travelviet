@@ -14,6 +14,7 @@ export default function ShopProductDetail() {
   
   const [selectedVariantId, setSelectedVariantId] = useState<number | null>(null);
   const [quantity, setQuantity] = useState(1);
+  const [activeImage, setActiveImage] = useState<string | null>(null);
 
   const { data: product, isLoading } = useQuery({
     queryKey: ["shop-product", slug],
@@ -39,6 +40,7 @@ export default function ShopProductDetail() {
 
   const selectedVariant = product.variants?.find((v: any) => v.id === selectedVariantId) || product.variants?.[0];
   const currentPrice = parseFloat(product.base_price) + (selectedVariant ? parseFloat(selectedVariant.price_modifier) : 0);
+  const currentDisplayImage = activeImage || selectedVariant?.image_url || product.image_url;
 
   const handleAddToCart = () => {
     if (!user) {
@@ -70,16 +72,39 @@ export default function ShopProductDetail() {
 
         <div className="grid md:grid-cols-2 gap-10">
           {/* Image Gallery */}
-          <div className="bg-card rounded-3xl overflow-hidden border border-border/50 aspect-[4/5] md:aspect-square relative flex items-center justify-center">
-            {(selectedVariant?.image_url || product.image_url) ? (
-              <img 
-                src={`${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8000'}${selectedVariant?.image_url || product.image_url}`} 
-                alt={product.name} 
-                className="w-full h-full object-cover transition-opacity duration-300" 
-              />
-            ) : (
-              <Package className="h-32 w-32 opacity-10" />
-            )}
+          <div className="flex flex-col gap-4">
+            <div className="bg-card rounded-3xl overflow-hidden border border-border/50 aspect-[4/5] md:aspect-square relative flex items-center justify-center">
+              {currentDisplayImage ? (
+                <img 
+                  src={`${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8000'}${currentDisplayImage}`} 
+                  alt={product.name} 
+                  className="w-full h-full object-cover transition-opacity duration-300" 
+                />
+              ) : (
+                <Package className="h-32 w-32 opacity-10" />
+              )}
+            </div>
+            
+            {/* Thumbnails */}
+            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+              {product.image_url && (
+                <button 
+                  onClick={() => setActiveImage(product.image_url)}
+                  className={`h-20 w-20 shrink-0 rounded-xl overflow-hidden border-2 transition-all ${currentDisplayImage === product.image_url ? 'border-primary' : 'border-transparent hover:border-primary/50'}`}
+                >
+                  <img src={`${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8000'}${product.image_url}`} alt="main" className="h-full w-full object-cover" />
+                </button>
+              )}
+              {product.images?.map((img: any) => (
+                <button 
+                  key={img.id}
+                  onClick={() => setActiveImage(img.image_url)}
+                  className={`h-20 w-20 shrink-0 rounded-xl overflow-hidden border-2 transition-all ${currentDisplayImage === img.image_url ? 'border-primary' : 'border-transparent hover:border-primary/50'}`}
+                >
+                  <img src={`${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8000'}${img.image_url}`} alt="gallery" className="h-full w-full object-cover" />
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Product Info */}
@@ -104,7 +129,12 @@ export default function ShopProductDetail() {
                     return (
                       <button
                         key={v.id}
-                        onClick={() => !isOutOfStock && setSelectedVariantId(v.id)}
+                        onClick={() => {
+                          if (!isOutOfStock) {
+                            setSelectedVariantId(v.id);
+                            setActiveImage(null); // let variant override
+                          }
+                        }}
                         disabled={isOutOfStock}
                         className={`relative px-4 py-2 rounded-xl text-sm font-medium border-2 transition-all overflow-hidden ${
                           isSelected 
