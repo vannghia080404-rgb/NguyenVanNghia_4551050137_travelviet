@@ -63,7 +63,7 @@ const Destinations = () => {
     hasNextPage,
     fetchNextPage,
   } = useInfiniteQuery({
-    queryKey: ["featured-tours"],
+    queryKey: ["featured-tours", "infinite"],
     queryFn: async ({ pageParam = 1 }) => {
       const res = await api.get(`/tours?featured=true&per_page=8&page=${pageParam}`);
       return res.data;

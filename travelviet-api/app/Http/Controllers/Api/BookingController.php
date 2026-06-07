@@ -117,7 +117,7 @@ class BookingController extends Controller
                     dispatch(function () use ($userEmail, $bookingId) {
                         $b = \App\Models\Booking::with('tour', 'travelers', 'user')->find($bookingId);
                         if ($b) Mail::to($userEmail)->send(new BookingConfirmationMail($b));
-                    })->afterResponse();
+                    });
                 } catch (\Exception $e) {
                     // Ignore mail errors so booking is still successful
                     \Log::error('Mail error: ' . $e->getMessage());
