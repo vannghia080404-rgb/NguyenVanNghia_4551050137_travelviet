@@ -43,6 +43,7 @@ Route::get('/tours/{slug}', [TourController::class, 'show']);
 
 Route::get('/destinations', [DestinationController::class, 'index']);
 Route::get('/categories', [\App\Http\Controllers\Api\CategoryController::class, 'index']);
+Route::get('/payment-methods', [\App\Http\Controllers\Api\PaymentMethodController::class, 'index']);
 Route::get('/team-members', [TeamMemberController::class, 'index']);
 Route::get('/settings/global', [\App\Http\Controllers\Api\SettingController::class, 'getGlobalSettings']);
 Route::get('/promotions', [\App\Http\Controllers\Api\PublicPromotionController::class, 'index']);
@@ -140,6 +141,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/destinations/{id}', [AdminDestinationController::class, 'show']);
         Route::put('/destinations/{id}', [AdminDestinationController::class, 'update']);
         Route::delete('/destinations/{id}', [AdminDestinationController::class, 'destroy']);
+        
+        // Payment Methods Management
+        Route::get('/payment-methods', [\App\Http\Controllers\Api\Admin\PaymentMethodController::class, 'index']);
+        Route::post('/payment-methods', [\App\Http\Controllers\Api\Admin\PaymentMethodController::class, 'store']);
+        Route::put('/payment-methods/{id}', [\App\Http\Controllers\Api\Admin\PaymentMethodController::class, 'update']);
+        Route::delete('/payment-methods/{id}', [\App\Http\Controllers\Api\Admin\PaymentMethodController::class, 'destroy']);
 
         // Category Management (Admin)
         Route::get('/categories', [\App\Http\Controllers\Api\Admin\CategoryController::class, 'index']);
