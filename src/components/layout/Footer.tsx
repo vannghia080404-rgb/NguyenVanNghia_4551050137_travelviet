@@ -92,8 +92,8 @@ const Footer = () => {
           <div>
             <h3 className="font-display font-semibold mb-4 text-foreground">Hỗ trợ</h3>
             <ul className="space-y-2.5 text-sm text-muted-foreground">
-              <li><Link to="/about" className="hover:text-primary transition-smooth">Chính sách bảo mật</Link></li>
-              <li><Link to="/about" className="hover:text-primary transition-smooth">Điều khoản dịch vụ</Link></li>
+              <li><Link to="/about#privacy" className="hover:text-primary transition-smooth">Chính sách bảo mật</Link></li>
+              <li><Link to="/about#terms" className="hover:text-primary transition-smooth">Điều khoản dịch vụ</Link></li>
               <li><Link to="/contact" className="hover:text-primary transition-smooth">FAQ</Link></li>
               <li><Link to="/about" className="hover:text-primary transition-smooth">Du lịch bền vững</Link></li>
             </ul>

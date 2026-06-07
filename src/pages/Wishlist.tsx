@@ -13,13 +13,13 @@ const Wishlist = () => {
   const queryClient = useQueryClient();
 
   // Fetch wishlist from API
-  const { data, isLoading } = useQuery({
+  const { data: rawData, isLoading } = useQuery({
     queryKey: ["wishlist"],
-    queryFn: () => api.get("/wishlist").then((r) => r.data.data || []),
+    queryFn: () => api.get("/wishlist").then((r) => r.data.data),
     enabled: isAuthenticated,
   });
 
-  const wishlist: any[] = data || [];
+  const wishlist = Array.isArray(rawData) ? rawData : [];
 
   // Remove single tour
   const removeMutation = useMutation({
