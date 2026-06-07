@@ -9,7 +9,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, Polyline } from "react-leaflet";
 import { useNavigate } from "react-router-dom";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
@@ -270,7 +270,9 @@ export default function ProfileShopOrders() {
                               </Button>
                             )}
                             
-                            <Button variant="outline" className="h-10 px-6 text-sm hover:bg-slate-50">Liên hệ người bán</Button>
+                            <Button variant="outline" className="h-10 px-6 text-sm hover:bg-slate-50" onClick={() => window.open('https://zalo.me/0901234567', '_blank')}>
+                              Liên hệ người bán (Zalo)
+                            </Button>
                           </>
                         )}
 
@@ -316,6 +318,22 @@ export default function ProfileShopOrders() {
                           <h4 className="font-semibold text-sm mb-4 flex items-center gap-2 text-slate-700">
                             <Truck className="h-4 w-4" /> Lộ trình giao hàng
                           </h4>
+                          
+                          {/* Add Map */}
+                          {order.shipping_lat && order.shipping_lng && (
+                            <div className="mb-6 h-48 w-full rounded-xl overflow-hidden border border-border/50 relative z-0">
+                                    <iframe 
+                                      src={`https://maps.google.com/maps?saddr=${order.trackings?.[0]?.lat || 10.762622},${order.trackings?.[0]?.lng || 106.660172}&daddr=${order.shipping_lat},${order.shipping_lng}&output=embed`} 
+                                      width="100%" 
+                                      height="100%" 
+                                      style={{ border: 0 }} 
+                                      allowFullScreen 
+                                      loading="lazy" 
+                                      referrerPolicy="no-referrer-when-downgrade"
+                                    ></iframe>
+                            </div>
+                          )}
+
                           <div className="relative pl-6 space-y-5 before:absolute before:inset-0 before:ml-2.5 before:-translate-x-px before:h-[calc(100%-1rem)] before:w-0.5 before:bg-slate-200">
                             {order.trackings.map((t: any, idx: number) => (
                               <div key={t.id} className="relative">
@@ -323,6 +341,7 @@ export default function ProfileShopOrders() {
                                 <div className={cn("text-sm leading-tight", idx === 0 ? "font-medium text-slate-800" : "text-slate-500")}>{t.title}</div>
                                 <div className="text-xs text-slate-400 mt-1">{new Date(t.created_at).toLocaleString('vi-VN')}</div>
                                 {t.description && <div className="text-xs text-slate-500 mt-1 bg-white p-2 rounded border border-slate-100 inline-block">{t.description}</div>}
+                                {t.image_url && <img src={t.image_url} alt="tracking" className="mt-2 rounded-lg h-16 object-contain border" />}
                               </div>
                             ))}
                           </div>

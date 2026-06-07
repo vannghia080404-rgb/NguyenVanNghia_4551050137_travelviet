@@ -51,6 +51,8 @@ Route::get('/promotions', [\App\Http\Controllers\Api\PublicPromotionController::
 // Shop (Public)
 Route::get('/shop/products', [\App\Http\Controllers\ShopController::class, 'index']);
 Route::get('/shop/products/{slug}', [\App\Http\Controllers\ShopController::class, 'show']);
+Route::get('/shop/vouchers', [\App\Http\Controllers\ShopController::class, 'getVouchers']);
+Route::get('/shop/products/{productId}/reviews', [\App\Http\Controllers\ShopReviewController::class, 'index']);
 
 // Tour sub-resources (public)
 Route::get('/tours/{tourId}/hotels', [HotelController::class, 'index']);
@@ -70,11 +72,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/shop/cart/{id}', [\App\Http\Controllers\ShopController::class, 'removeFromCart']);
     Route::post('/shop/checkout', [\App\Http\Controllers\ShopController::class, 'checkout']);
     Route::post('/shop/check-voucher', [\App\Http\Controllers\ShopController::class, 'checkVoucher']);
+    Route::post('/shop/save-voucher', [\App\Http\Controllers\ShopController::class, 'saveVoucher']);
+    Route::get('/shop/my-vouchers', [\App\Http\Controllers\ShopController::class, 'myVouchers']);
     Route::get('/shop/orders', [\App\Http\Controllers\ShopController::class, 'getOrders']);
     Route::post('/shop/orders/{id}/receipt', [\App\Http\Controllers\ShopController::class, 'uploadReceipt']);
     Route::post('/shop/orders/{id}/pay', [\App\Http\Controllers\ShopController::class, 'generatePaymentUrl']);
     Route::delete('/shop/orders/{id}/cancel', [\App\Http\Controllers\ShopController::class, 'cancelOrder']);
     Route::post('/shop/orders/{id}/confirm-received', [\App\Http\Controllers\ShopController::class, 'confirmReceived']);
+
+    // Shop Reviews (submit, like)
+    Route::post('/shop/products/reviews', [\App\Http\Controllers\ShopReviewController::class, 'store']);
+    Route::post('/shop/products/reviews/{id}/like', [\App\Http\Controllers\ShopReviewController::class, 'like']);
+    Route::post('/shop/products/reviews/{id}/dislike', [\App\Http\Controllers\ShopReviewController::class, 'dislike']);
 
     // Wishlist
     Route::get('/wishlist', [WishlistController::class, 'index']);
@@ -197,5 +206,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/shop/orders/{id}/status', [\App\Http\Controllers\AdminShopController::class, 'updateOrderStatus']);
         Route::put('/shop/orders/{id}/payment-status', [\App\Http\Controllers\AdminShopController::class, 'updatePaymentStatus']);
         Route::post('/shop/orders/{id}/trackings', [\App\Http\Controllers\AdminShopController::class, 'addTracking']);
+        
+        // Shop Review Management
+        Route::get('/shop/reviews', [\App\Http\Controllers\ShopReviewController::class, 'adminIndex']);
+        Route::post('/shop/reviews/{id}/reply', [\App\Http\Controllers\ShopReviewController::class, 'reply']);
     });
 });

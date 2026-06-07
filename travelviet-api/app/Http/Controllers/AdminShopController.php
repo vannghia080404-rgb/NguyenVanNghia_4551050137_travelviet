@@ -159,6 +159,8 @@ class AdminShopController extends Controller
             'title' => $request->title,
             'description' => $request->description,
             'location' => $request->location,
+            'lat' => $request->lat,
+            'lng' => $request->lng,
             'image_url' => $imageUrl
         ]);
 

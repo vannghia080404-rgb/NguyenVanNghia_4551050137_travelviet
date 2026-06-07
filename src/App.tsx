@@ -49,6 +49,7 @@ import AdminPromotions from "./pages/admin/AdminPromotions.tsx";
 import AdminVouchers from "./pages/admin/AdminVouchers.tsx";
 import AdminProducts from "./pages/admin/AdminProducts.tsx";
 import AdminShopOrders from "./pages/admin/AdminShopOrders.tsx";
+import AdminShopReviews from "./pages/admin/AdminShopReviews.tsx";
 import AdminPaymentMethods from "./pages/admin/AdminPaymentMethods.tsx";
 import AdminProfile from "./pages/admin/AdminProfile.tsx";
 import Shop from "./pages/Shop.tsx";
@@ -132,6 +133,7 @@ const AnimatedRoutes = () => {
         <Route path="/admin/destinations" element={<motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}><RenderedRoute><ProtectedRoute requireAdmin><AdminDestinations /></ProtectedRoute></RenderedRoute></motion.div>} />
         <Route path="/admin/shop/products" element={<motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}><RenderedRoute><ProtectedRoute requireAdmin><AdminProducts /></ProtectedRoute></RenderedRoute></motion.div>} />
         <Route path="/admin/shop/orders" element={<motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}><RenderedRoute><ProtectedRoute requireAdmin><AdminShopOrders /></ProtectedRoute></RenderedRoute></motion.div>} />
+        <Route path="/admin/shop/reviews" element={<motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}><RenderedRoute><ProtectedRoute requireAdmin><AdminShopReviews /></ProtectedRoute></RenderedRoute></motion.div>} />
         <Route path="/admin/categories" element={<motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}><RenderedRoute><ProtectedRoute requireAdmin><AdminCategories /></ProtectedRoute></RenderedRoute></motion.div>} />
         <Route path="/admin/broadcast" element={<motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}><RenderedRoute><ProtectedRoute requireAdmin><AdminBroadcast /></ProtectedRoute></RenderedRoute></motion.div>} />
         <Route path="/admin/ranks" element={<motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}><RenderedRoute><ProtectedRoute requireAdmin><AdminRanks /></ProtectedRoute></RenderedRoute></motion.div>} />

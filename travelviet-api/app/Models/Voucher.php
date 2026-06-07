@@ -7,21 +7,22 @@ use Illuminate\Database\Eloquent\Model;
 class Voucher extends Model
 {
     protected $fillable = [
-        'code',
-        'discount_type',
-        'discount_value',
-        'min_order_value',
-        'max_discount',
-        'valid_from',
-        'valid_to',
-        'usage_limit',
-        'used_count',
-        'is_active',
+        'code', 'title', 'description', 'scope', 'discount_type', 'discount_value',
+        'min_order_value', 'min_quantity', 'max_discount', 'applies_to', 'target_ids',
+        'valid_from', 'valid_to', 'usage_limit', 'used_count', 'user_limit',
+        'is_public', 'is_active'
     ];
 
     protected $casts = [
-        'valid_from' => 'date',
-        'valid_to' => 'date',
+        'target_ids' => 'array',
+        'valid_from' => 'datetime',
+        'valid_to' => 'datetime',
+        'is_public' => 'boolean',
         'is_active' => 'boolean',
     ];
+
+    public function userVouchers()
+    {
+        return $this->hasMany(UserVoucher::class);
+    }
 }

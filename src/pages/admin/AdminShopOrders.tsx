@@ -8,9 +8,27 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents, Polyline } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+
+function MapClickHandler({ onLocationSelect, setLocationText }: { onLocationSelect: (lat: number, lng: number) => void, setLocationText: (text: string) => void }) {
+  useMapEvents({
+    async click(e) {
+      onLocationSelect(e.latlng.lat, e.latlng.lng);
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${e.latlng.lat}&lon=${e.latlng.lng}`);
+        const data = await res.json();
+        if (data && data.display_name) {
+          setLocationText(data.display_name);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    },
+  });
+  return null;
+}
 
 // Fix leaflet default icon
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -150,7 +168,7 @@ export default function AdminShopOrders() {
                             Xem & Cập nhật
                           </button>
                         </DialogTrigger>
-                        <DialogContent className="max-w-2xl bg-card border-border rounded-2xl">
+                        <DialogContent className="max-w-2xl bg-card border-border rounded-2xl max-h-[90vh] overflow-y-auto">
                           <DialogHeader>
                             <DialogTitle className="text-xl font-bold flex items-center gap-2">
                               <Package className="h-5 w-5 text-primary" />
@@ -171,13 +189,16 @@ export default function AdminShopOrders() {
                                 </p>
                                 {order.notes && <p><strong className="text-foreground">Ghi chú:</strong> {order.notes}</p>}
                                 {order.shipping_lat && order.shipping_lng && (
-                                  <div className="mt-3 h-32 w-full rounded-xl overflow-hidden border border-border/50 relative z-0">
-                                    <MapContainer center={[order.shipping_lat, order.shipping_lng]} zoom={14} style={{ height: '100%', width: '100%' }} zoomControl={false} dragging={false}>
-                                      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                                      <Marker position={[order.shipping_lat, order.shipping_lng]}>
-                                        <Popup>Vị trí khách chọn</Popup>
-                                      </Marker>
-                                    </MapContainer>
+                                  <div className="mt-3 h-40 w-full rounded-xl overflow-hidden border border-border/50 relative z-0">
+                                    <iframe 
+                                      src={`https://maps.google.com/maps?saddr=10.762622,106.660172&daddr=${order.shipping_lat},${order.shipping_lng}&output=embed`} 
+                                      width="100%" 
+                                      height="100%" 
+                                      style={{ border: 0 }} 
+                                      allowFullScreen 
+                                      loading="lazy" 
+                                      referrerPolicy="no-referrer-when-downgrade"
+                                    ></iframe>
                                   </div>
                                 )}
                               </div>
@@ -222,7 +243,32 @@ export default function AdminShopOrders() {
                                   <Input placeholder="Vị trí (Tùy chọn)" value={trackingForm.location} onChange={e => setTrackingForm({ ...trackingForm, location: e.target.value, orderId: order.id })} />
                                 </div>
                                 <div className="flex flex-col gap-2">
-                                  <Input type="file" accept="image/*" onChange={e => setTrackingForm({ ...trackingForm, image: e.target.files?.[0], orderId: order.id })} />
+                                  <div className="h-32 w-full rounded-lg overflow-hidden border border-border z-0">
+                                    <MapContainer center={[order.shipping_lat || 10.762622, order.shipping_lng || 106.660172]} zoom={10} style={{ height: '100%', width: '100%' }}>
+                                      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                                      {trackingForm.lat && trackingForm.lng && (
+                                        <>
+                                          <Marker position={[trackingForm.lat, trackingForm.lng]} />
+                                          {order.shipping_lat && order.shipping_lng && (
+                                            <Polyline positions={[
+                                              [trackingForm.lat, trackingForm.lng],
+                                              [order.shipping_lat, order.shipping_lng]
+                                            ]} color="blue" dashArray="5, 10" />
+                                          )}
+                                        </>
+                                      )}
+                                      {order.shipping_lat && order.shipping_lng && (
+                                        <Marker position={[order.shipping_lat, order.shipping_lng]}>
+                                          <Popup>Đích đến (Khách hàng)</Popup>
+                                        </Marker>
+                                      )}
+                                      <MapClickHandler 
+                                        onLocationSelect={(lat, lng) => setTrackingForm({ ...trackingForm, lat, lng, orderId: order.id })} 
+                                        setLocationText={(text) => setTrackingForm({ ...trackingForm, location: text, orderId: order.id })}
+                                      />
+                                    </MapContainer>
+                                  </div>
+                                  <Input type="file" accept="image/*" onChange={e => setTrackingForm({ ...trackingForm, image: e.target.files?.[0], orderId: order.id })} className="mt-2" />
                                   <button disabled={!trackingForm.title || addTrackingMutation.isPending || trackingForm.orderId !== order.id} onClick={() => addTrackingMutation.mutate(trackingForm)} className="bg-primary text-primary-foreground font-semibold h-10 rounded-lg hover:bg-primary/90 disabled:opacity-50">
                                     {addTrackingMutation.isPending ? "Đang thêm..." : "Thêm hành trình"}
                                   </button>

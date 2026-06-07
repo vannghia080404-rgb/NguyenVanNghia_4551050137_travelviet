@@ -11,7 +11,11 @@ class Review extends Model
 
     protected $fillable = [
         'user_id', 'tour_id', 'booking_id', 'rating', 'comment', 
-        'is_approved', 'admin_reply', 'replied_at'
+        'is_approved', 'admin_reply', 'replied_at', 'images'
+    ];
+
+    protected $casts = [
+        'images' => 'array',
     ];
 
     public function tour()

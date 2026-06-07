@@ -148,7 +148,9 @@ export const adminUserAPIs = {
 // ============ Review APIs ============
 export const reviewAPIs = {
   list: (tourId: number) => api.get(`/tours/${tourId}/reviews`),
-  create: (data: { tour_id: number; booking_id?: string | number | null; rating: number; comment: string }) => api.post('/reviews', data),
+  create: (data: any) => api.post('/reviews', data, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
   // Admin methods
   adminList: (page = 1) => api.get(`/admin/reviews?page=${page}`),
   approve: (id: number) => api.post(`/admin/reviews/${id}/approve`),
@@ -202,3 +204,10 @@ export const shopOrderAPIs = {
   cancel: (id: number, cancel_reason: string) => api.delete(`/shop/orders/${id}/cancel`, { data: { cancel_reason } }),
   confirmReceived: (id: number) => api.post(`/shop/orders/${id}/confirm-received`),
 };
+
+// ============ Shop Review APIs ============
+export const shopReviewAPIs = {
+  adminList: () => api.get('/admin/shop/reviews'),
+  reply: (id: number, reply: string) => api.post(`/admin/shop/reviews/${id}/reply`, { admin_reply: reply }),
+};
+

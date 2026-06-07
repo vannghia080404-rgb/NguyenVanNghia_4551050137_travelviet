@@ -36,7 +36,7 @@ const getItinerary = (durationDays: number) => {
 
 const getEmbedUrl = (mapUrl: string, tourName: string, destinationName: string) => {
   if (!mapUrl) return "";
-  
+
   let url = mapUrl.trim();
 
   // 0. If it contains an iframe HTML tag, extract the src URL
@@ -51,7 +51,7 @@ const getEmbedUrl = (mapUrl: string, tourName: string, destinationName: string) 
   if (url.includes("/maps/embed")) {
     return url;
   }
-  
+
   // 2. Try to extract coordinates like @15.9995511,107.9943547 FIRST to ensure absolute positioning accuracy!
   const coordMatch = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
   if (coordMatch) {
@@ -59,7 +59,7 @@ const getEmbedUrl = (mapUrl: string, tourName: string, destinationName: string) 
     const lng = coordMatch[2];
     return `https://maps.google.com/maps?q=${lat},${lng}&t=&z=16&hl=vi&ie=UTF8&iwloc=addr&output=embed`;
   }
-  
+
   // 3. Try to extract place name from standard google.com/maps/place/Name
   if (url.includes("maps/place/")) {
     try {
@@ -95,7 +95,7 @@ const getEmbedUrl = (mapUrl: string, tourName: string, destinationName: string) 
   cleanQuery = cleanQuery.replace(/\d+\s*(ngày|đêm|n|đ)\s*\d*\s*(ngày|đêm|n|đ)*/gi, "");
   // Replace hyphens and pipes with spaces and clean up
   cleanQuery = cleanQuery.replace(/[-|]/g, " ").replace(/\s+/g, " ").trim();
-  
+
   // Combine with destination
   const searchAddress = cleanQuery + (destinationName ? `, ${destinationName}` : "");
   return `https://maps.google.com/maps?q=${encodeURIComponent(searchAddress)}&t=&z=16&hl=vi&ie=UTF8&iwloc=addr&output=embed`;
@@ -177,7 +177,7 @@ const getMapAddress = (mapUrl: string, fallback: string) => {
           return decoded.trim();
         }
       }
-    } catch (e) {}
+    } catch (e) { }
   }
 
   // 2. Try to extract from /maps/place/Name
@@ -191,7 +191,7 @@ const getMapAddress = (mapUrl: string, fallback: string) => {
           return decoded.trim();
         }
       }
-    } catch (e) {}
+    } catch (e) { }
   }
 
   // 3. Try to extract query parameter q=
@@ -203,7 +203,7 @@ const getMapAddress = (mapUrl: string, fallback: string) => {
         return q.trim();
       }
     }
-  } catch (e) {}
+  } catch (e) { }
 
   return fallback;
 };
@@ -227,7 +227,7 @@ const TourDetail = () => {
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
   const { toast } = useToast();
-  
+
   const { data: response, isLoading, isError } = useQuery({
     queryKey: ['tour', slug],
     queryFn: async () => {
@@ -250,7 +250,7 @@ const TourDetail = () => {
   const [allHotelsSoldOut, setAllHotelsSoldOut] = useState(false);
   const [showGallery, setShowGallery] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  
+
   // Sync liked state with global wishlist
   const { data: wishlistData } = useQuery({
     queryKey: ["wishlist"],
@@ -277,9 +277,9 @@ const TourDetail = () => {
       if (!user) return;
       await queryClient.cancelQueries({ queryKey: ["wishlist"] });
       const previousWishlist = queryClient.getQueryData(["wishlist"]);
-      
+
       setLiked(!liked);
-      
+
       queryClient.setQueryData(["wishlist"], (old: any) => {
         if (!Array.isArray(old)) return old;
         if (!liked) return [...old, tour];
@@ -320,6 +320,7 @@ const TourDetail = () => {
   const [reviewRating, setReviewRating] = useState(5);
   const [hoverRating, setHoverRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
+  const [reviewImages, setReviewImages] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { data: reviewsResponse, isLoading: reviewsLoading, isError: isReviewsError } = useQuery({
     queryKey: ["tour-reviews", tour?.id],
@@ -352,25 +353,27 @@ const TourDetail = () => {
       toast({
         title: "Yêu cầu đăng nhập",
         description: "Bạn cần đăng nhập để viết đánh giá",
-        variant: "destructive",
       });
       navigate("/login");
       return;
     }
-    
-    if (!reviewText.trim()) return;
+
+    if (!reviewText.trim() && reviewImages.length === 0) return;
 
     try {
       setIsSubmitting(true);
-      await reviewAPIs.create({ 
-        tour_id: tour?.id || 0, 
-        booking_id: bookingId,
-        rating: reviewRating, 
-        comment: reviewText 
-      });
-      
+      const formData = new FormData();
+      formData.append("tour_id", (tour?.id || 0).toString());
+      if (bookingId) formData.append("booking_id", bookingId);
+      formData.append("rating", reviewRating.toString());
+      formData.append("comment", reviewText);
+      reviewImages.forEach((img) => formData.append("images[]", img));
+
+      await reviewAPIs.create(formData);
+
       setReviewText("");
       setReviewRating(5);
+      setReviewImages([]);
       toast({
         title: "Thành công",
         description: "Cảm ơn bạn đã gửi đánh giá!",
@@ -379,9 +382,8 @@ const TourDetail = () => {
       queryClient.invalidateQueries({ queryKey: ["tour", slug] });
     } catch (err: any) {
       toast({
-        title: "Lỗi",
-        description: err.response?.data?.message || "Không thể gửi đánh giá lúc này",
-        variant: "destructive",
+        title: "Thông báo",
+        description: err.response?.data?.message || "Không thể gửi đánh giá lúc này,mời khải trải nghiệm tours rồi quay lại",
       });
     } finally {
       setIsSubmitting(false);
@@ -470,29 +472,29 @@ const TourDetail = () => {
               </button>
             </div>
             <div className="flex-1 flex items-center justify-center relative px-4 pb-4">
-              <button 
+              <button
                 onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(prev => prev > 0 ? prev - 1 : gallery.length - 1); }}
                 className="absolute left-4 md:left-8 h-12 w-12 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-white/20 transition-smooth z-10"
               >
                 <ChevronRight className="h-6 w-6 rotate-180" />
               </button>
-              
-              <img 
-                src={gallery[currentImageIndex]} 
+
+              <img
+                src={gallery[currentImageIndex]}
                 alt={`${tour.name} - ảnh ${currentImageIndex + 1}`}
                 className="max-h-full max-w-full object-contain animate-scale-in"
                 key={currentImageIndex} // force re-render for animation
                 onClick={(e) => e.stopPropagation()}
               />
-              
-              <button 
+
+              <button
                 onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(prev => prev < gallery.length - 1 ? prev + 1 : 0); }}
                 className="absolute right-4 md:right-8 h-12 w-12 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-white/20 transition-smooth z-10"
               >
                 <ChevronRight className="h-6 w-6" />
               </button>
             </div>
-            
+
             {/* Thumbnails */}
             <div className="h-24 bg-black p-4 flex justify-center gap-2 overflow-x-auto" onClick={(e) => e.stopPropagation()}>
               {gallery.map((img, i) => (
@@ -714,6 +716,8 @@ const TourDetail = () => {
                   setHoverRating={setHoverRating}
                   reviewText={reviewText}
                   setReviewText={setReviewText}
+                  reviewImages={reviewImages}
+                  setReviewImages={setReviewImages}
                   handleReviewSubmit={handleReviewSubmit}
                   isSubmitting={isSubmitting}
                   onNavigateToOrders={() => navigate("/profile?tab=orders")}
@@ -836,16 +840,16 @@ const TourDetail = () => {
                   </p>
                 </div>
               </div>
-              
+
               <div className="w-full h-[250px] rounded-xl overflow-hidden border border-border mb-4 bg-muted relative group">
                 {tour.map_url || tour.destination?.name || tour.destination ? (
-                  <iframe 
-                    src={getEmbedUrl(tour.map_url, tour.name, tour.destination?.name || tour.destination)} 
-                    width="100%" 
-                    height="100%" 
-                    style={{ border: 0 }} 
-                    allowFullScreen={true} 
-                    loading="lazy" 
+                  <iframe
+                    src={getEmbedUrl(tour.map_url, tour.name, tour.destination?.name || tour.destination)}
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    allowFullScreen={true}
+                    loading="lazy"
                     referrerPolicy="no-referrer-when-downgrade"
                     title="Bản đồ tour"
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
@@ -858,10 +862,10 @@ const TourDetail = () => {
                 )}
                 <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
               </div>
-              
+
               {(tour.map_url || tour.destination?.name || tour.destination) && (
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="w-full justify-center gap-2 border-border/80 hover:bg-secondary transition-colors"
                   asChild
                 >

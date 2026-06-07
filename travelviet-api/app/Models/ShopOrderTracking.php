@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class ShopOrderTracking extends Model
 {
-    protected $fillable = ['shop_order_id', 'title', 'description', 'location', 'image_url'];
+    protected $fillable = ['shop_order_id', 'title', 'description', 'location', 'image_url', 'lat', 'lng'];
 
     public function order()
     {

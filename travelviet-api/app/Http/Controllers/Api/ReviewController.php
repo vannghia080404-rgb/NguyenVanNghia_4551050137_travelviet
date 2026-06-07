@@ -28,9 +28,11 @@ class ReviewController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'tour_id' => 'required|exists:tours,id',
-            'booking_id' => 'required|exists:bookings,id',
+            'booking_id' => 'nullable|exists:bookings,id',
             'rating' => 'required|integer|min:1|max:5',
             'comment' => 'nullable|string|max:1000',
+            'images' => 'nullable|array|max:3',
+            'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:5120',
         ]);
 
         if ($validator->fails()) {
@@ -41,36 +43,52 @@ class ReviewController extends Controller
             ], 422);
         }
 
-        // Check if user has a COMPLETED booking for this booking_id
-        $booking = \App\Models\Booking::where('id', $request->booking_id)
-            ->where('user_id', auth()->id())
+        // Find an un-reviewed completed booking for this tour
+        $availableBooking = \App\Models\Booking::where('user_id', auth()->id())
             ->where('tour_id', $request->tour_id)
             ->where('status', 'completed')
+            ->whereNotIn('id', function($query) {
+                $query->select('booking_id')
+                      ->from('reviews')
+                      ->whereNotNull('booking_id');
+            })
             ->first();
 
-        if (!$booking) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Bạn chỉ có thể đánh giá cho đơn hàng đã hoàn thành.'
-            ], 403);
+        if (!$availableBooking) {
+            $hasAnyCompleted = \App\Models\Booking::where('user_id', auth()->id())
+                ->where('tour_id', $request->tour_id)
+                ->where('status', 'completed')
+                ->exists();
+
+            if (!$hasAnyCompleted) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Bạn chỉ có thể đánh giá tour sau khi đã hoàn thành chuyến đi.'
+                ], 403);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Bạn đã đánh giá tất cả các chuyến đi của tour này. Hãy đặt thêm tour để tiếp tục đánh giá.'
+                ], 403);
+            }
         }
 
-        // Check if this booking was already reviewed
-        $existingReview = Review::where('booking_id', $request->booking_id)->first();
-        if ($existingReview) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Bạn đã đánh giá đơn hàng này rồi.'
-            ], 400);
+        $images = [];
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $path = $image->store('reviews', 'public');
+                $images[] = '/storage/' . $path;
+            }
         }
 
         $review = Review::create([
             'user_id' => auth()->id(),
             'tour_id' => $request->tour_id,
-            'booking_id' => $request->booking_id,
+            'booking_id' => $availableBooking->id,
             'rating' => $request->rating,
             'comment' => $request->comment,
-            'is_approved' => false // Admin needs to approve
+            'images' => $images,
+            'is_approved' => auth()->user()->is_staff ? true : false
         ]);
 
         return response()->json([

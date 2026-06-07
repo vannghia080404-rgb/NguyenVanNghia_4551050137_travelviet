@@ -18,6 +18,7 @@ const navItems = [
   { to: "/admin/destinations", icon: MapPin, label: "Quản lý địa danh" },
   { to: "/admin/shop/products", icon: Package, label: "Sản phẩm Shop" },
   { to: "/admin/shop/orders", icon: ShoppingBag, label: "Đơn hàng Shop" },
+  { to: "/admin/shop/reviews", icon: MessageSquare, label: "Đánh giá Shop" },
   { to: "/admin/categories", icon: LayoutDashboard, label: "Danh mục tour" },
   { to: "/admin/hotels", icon: Building2, label: "Khách sạn" },
   { to: "/admin/bookings", icon: Calendar, label: "Đơn đặt chỗ" },

@@ -21,12 +21,28 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-function LocationMarker({ position, setPosition }: { position: any, setPosition: any }) {
-  useMapEvents({
-    click(e) {
+function LocationMarker({ position, setPosition, setDisplayName }: { position: any, setPosition: any, setDisplayName: any }) {
+  const map = useMapEvents({
+    async click(e) {
       setPosition(e.latlng);
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${e.latlng.lat}&lon=${e.latlng.lng}`);
+        const data = await res.json();
+        if (data && data.display_name) {
+          setDisplayName(data.display_name);
+        }
+      } catch (err) {
+        console.error("Reverse geocoding error", err);
+      }
     },
   });
+  
+  useEffect(() => {
+    if (position) {
+      map.flyTo(position, map.getZoom() < 12 ? 14 : map.getZoom(), { duration: 1.5 });
+    }
+  }, [position, map]);
+
   return position === null ? null : (
     <Marker position={position}></Marker>
   );
@@ -49,12 +65,47 @@ export default function ShopCheckout() {
     payment_method: "cash",
   });
   const [mapPosition, setMapPosition] = useState<any>(null);
+  
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showResults, setShowResults] = useState(false);
 
   useEffect(() => {
     if (mapPosition) {
       setForm(f => ({ ...f, shipping_lat: mapPosition.lat, shipping_lng: mapPosition.lng }));
     }
   }, [mapPosition]);
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(async () => {
+      if (searchQuery.length > 5) {
+        setIsSearching(true);
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&countrycodes=vn&limit=5`);
+          const data = await res.json();
+          setSearchResults(data);
+          setShowResults(true);
+        } catch (e) {
+          console.error(e);
+        } finally {
+          setIsSearching(false);
+        }
+      } else {
+        setSearchResults([]);
+        setShowResults(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery]);
+
+  const handleSelectAddress = (result: any) => {
+    setForm({ ...form, shipping_address: result.display_name });
+    setSearchQuery(result.display_name);
+    setMapPosition({ lat: parseFloat(result.lat), lng: parseFloat(result.lon) });
+    setShowResults(false);
+  };
 
   const [voucherCode, setVoucherCode] = useState("");
   const [appliedVoucher, setAppliedVoucher] = useState<any>(null);
@@ -81,6 +132,12 @@ export default function ShopCheckout() {
 
   const cartItems = Array.isArray(rawCartItems) ? rawCartItems : [];
 
+  const { data: myVouchers } = useQuery({
+    queryKey: ["my-vouchers"],
+    queryFn: () => api.get("/shop/my-vouchers").then((res) => res.data.data),
+    enabled: !!user,
+  });
+
   const applyVoucherMutation = useMutation({
     mutationFn: (code: string) => api.post("/shop/check-voucher", { code }),
     onSuccess: (res) => {
@@ -94,7 +151,7 @@ export default function ShopCheckout() {
   });
 
   const checkoutMutation = useMutation({
-    mutationFn: (data: any) => api.post("/shop/checkout", { ...data, voucher_code: appliedVoucher?.code }),
+    mutationFn: (data: any) => api.post("/shop/checkout", { ...data, voucher_id: appliedVoucher?.id }),
     onSuccess: (res) => {
       toast.success("Đặt hàng thành công!");
       queryClient.invalidateQueries({ queryKey: ["cart"] });
@@ -186,16 +243,53 @@ export default function ShopCheckout() {
                 </div>
                 {form.delivery_method === 'home_delivery' && (
                   <div className="space-y-4">
-                    <div>
-                      <label className="text-sm font-semibold text-foreground/80">Địa chỉ giao hàng (Cụ thể) *</label>
-                      <textarea className="w-full mt-1.5 p-3 border border-border bg-background rounded-xl text-sm resize-none" rows={3} value={form.shipping_address} onChange={e => setForm({...form, shipping_address: e.target.value})} placeholder="Số nhà, Tên đường, Phường/Xã, Quận/Huyện, Tỉnh/TP" />
+                    <div className="relative">
+                      <label className="text-sm font-semibold text-foreground/80 mb-1.5 block">Địa chỉ giao hàng (Cụ thể) *</label>
+                      <div className="relative">
+                        <Input 
+                          className="w-full pr-10 bg-background" 
+                          value={searchQuery || form.shipping_address} 
+                          onChange={e => {
+                            setSearchQuery(e.target.value);
+                            setForm({...form, shipping_address: e.target.value});
+                          }} 
+                          onFocus={() => {if(searchResults.length > 0) setShowResults(true);}}
+                          onBlur={() => setTimeout(() => setShowResults(false), 200)}
+                          placeholder="Gõ để tìm địa chỉ..." 
+                        />
+                        {isSearching && <Loader2 className="h-4 w-4 absolute right-3 top-3 animate-spin text-muted-foreground" />}
+                      </div>
+                      
+                      {showResults && searchResults.length > 0 && (
+                        <div className="absolute z-[999] w-full mt-1 bg-card border border-border rounded-xl shadow-lg max-h-60 overflow-auto">
+                          {searchResults.map((res: any, idx: number) => (
+                            <button 
+                              key={idx} 
+                              className="w-full text-left px-4 py-3 text-sm hover:bg-secondary/50 transition-colors border-b border-border/50 last:border-0"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleSelectAddress(res);
+                              }}
+                            >
+                              {res.display_name}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    <div>
+                    <div className="pt-2">
                       <label className="text-sm font-semibold text-foreground/80 mb-2 block flex items-center gap-2"><MapPin className="h-4 w-4"/> Chọn vị trí trên bản đồ</label>
                       <div className="h-64 rounded-xl overflow-hidden border border-border relative z-0">
-                        <MapContainer center={[13.782967, 109.223847]} zoom={13} style={{ height: '100%', width: '100%' }}>
+                        <MapContainer center={mapPosition || [13.782967, 109.223847]} zoom={13} style={{ height: '100%', width: '100%' }}>
                           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                          <LocationMarker position={mapPosition} setPosition={setMapPosition} />
+                          <LocationMarker 
+                            position={mapPosition} 
+                            setPosition={setMapPosition} 
+                            setDisplayName={(name: string) => {
+                              setSearchQuery(name);
+                              setForm({...form, shipping_address: name});
+                            }}
+                          />
                         </MapContainer>
                       </div>
                       <p className="text-xs text-muted-foreground mt-2 italic">Bấm vào bản đồ để ghim vị trí chính xác giúp shipper giao hàng nhanh hơn.</p>
@@ -271,25 +365,36 @@ export default function ShopCheckout() {
               </div>
 
               <div className="mb-6 p-4 bg-secondary/30 rounded-xl border border-border">
-                <div className="flex gap-2">
-                  <Input 
-                    placeholder="Mã giảm giá (nếu có)" 
-                    value={voucherCode} 
-                    onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
-                    className="bg-background uppercase"
-                    disabled={applyVoucherMutation.isPending || appliedVoucher}
-                  />
-                  {appliedVoucher ? (
-                    <Button variant="outline" className="text-red-500 hover:text-red-600 hover:bg-red-50 border-red-200" onClick={() => { setAppliedVoucher(null); setVoucherCode(""); }}>Hủy</Button>
-                  ) : (
-                    <Button variant="secondary" onClick={() => applyVoucherMutation.mutate(voucherCode)} disabled={!voucherCode || applyVoucherMutation.isPending}>
-                      {applyVoucherMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Áp dụng"}
-                    </Button>
-                  )}
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-semibold text-foreground/80 block">Mã giảm giá của bạn</label>
+                  <select 
+                    className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    value={appliedVoucher?.id || ""}
+                    onChange={(e) => {
+                      const selectedId = e.target.value;
+                      if (!selectedId) {
+                        setAppliedVoucher(null);
+                      } else {
+                        const selected = myVouchers?.find((v: any) => v.id.toString() === selectedId);
+                        if (selected) {
+                          setAppliedVoucher(selected);
+                          toast.success("Đã chọn mã giảm giá!");
+                        }
+                      }
+                    }}
+                  >
+                    <option value="">-- Không sử dụng voucher --</option>
+                    {myVouchers?.map((v: any) => (
+                      <option key={v.id} value={v.id}>
+                        {v.code} - {v.discount_type === 'percent' ? `Giảm ${v.discount_value}%` : (v.discount_type === 'free_shipping' ? 'Miễn phí vận chuyển' : `Giảm ${new Intl.NumberFormat("vi-VN").format(v.discount_value)}đ`)}
+                        {v.min_order_value > 0 ? ` (Đơn từ ${new Intl.NumberFormat("vi-VN").format(v.min_order_value/1000)}k)` : ''}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 {appliedVoucher && (
-                  <p className="text-xs text-green-600 font-medium mt-2 flex items-center gap-1">
-                    <ShieldCheck className="h-3 w-3" /> Đã áp dụng mã {appliedVoucher.code} thành công!
+                  <p className="text-xs text-green-600 font-medium mt-3 flex items-center gap-1 bg-green-50 p-2 rounded border border-green-100">
+                    <ShieldCheck className="h-4 w-4" /> Đã chọn mã {appliedVoucher.code} ({appliedVoucher.title || 'Ưu đãi đặc biệt'})
                   </p>
                 )}
               </div>

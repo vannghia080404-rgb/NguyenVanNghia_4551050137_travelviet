@@ -1,15 +1,18 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Package, Search, SlidersHorizontal, ChevronRight, Star, ShoppingBag } from "lucide-react";
 import { getImageUrl } from "@/lib/utils";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import Atropos from 'atropos/react';
+import 'atropos/css';
 
 export default function Shop() {
   const [category, setCategory] = useState("all");
   const [search, setSearch] = useState("");
+  const navigate = useNavigate();
 
   const { data: products, isLoading } = useQuery({
     queryKey: ["shop-products", category],
@@ -64,29 +67,57 @@ export default function Shop() {
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {filteredProducts.map((p: any) => (
-              <Link key={p.id} to={`/shop/${p.slug}`} className="group bg-card rounded-2xl overflow-hidden shadow-soft hover:shadow-card transition-all border border-border/50 flex flex-col">
-                <div className="aspect-square bg-secondary/50 relative overflow-hidden">
-                  {p.image_url ? (
-                    <img src={getImageUrl(p.image_url)} alt={p.name} className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  ) : (
-                    <Package className="h-12 w-12 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-20" />
-                  )}
-                  {p.category && (
-                    <div className="absolute top-3 left-3 bg-white/90 backdrop-blur text-xs font-semibold px-2 py-1 rounded-md text-gray-800 shadow-sm">
-                      {p.category}
+              <Atropos
+                key={p.id}
+                className="h-full group cursor-pointer"
+                activeOffset={40}
+                shadow={false}
+                shadowOffset={0}
+                highlight={false}
+                onClick={() => navigate(`/shop/${p.slug}`)}
+              >
+                <div className="h-full bg-card rounded-2xl overflow-hidden shadow-soft hover:shadow-card transition-all border border-border/50 flex flex-col relative">
+                  {/* Glow Effect Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-10" />
+                  
+                  <div className="aspect-square bg-secondary/50 relative overflow-hidden z-20">
+                    {p.image_url ? (
+                      <img data-atropos-offset="-5" src={getImageUrl(p.image_url)} alt={p.name} className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    ) : (
+                      <Package data-atropos-offset="-5" className="h-12 w-12 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-20" />
+                    )}
+                    {p.category && (
+                      <div data-atropos-offset="10" className="absolute top-3 left-3 bg-white/90 backdrop-blur text-xs font-semibold px-2 py-1 rounded-md text-gray-800 shadow-sm">
+                        {p.category}
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-4 flex-1 flex flex-col z-20" data-atropos-offset="5">
+                    <h3 className="font-semibold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors text-sm">{p.name}</h3>
+                    <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                        <span>{parseFloat(p.avg_rating || 0).toFixed(1)}</span>
+                      </div>
+                      <span>Đã bán {p.sold_count || 0}</span>
                     </div>
-                  )}
-                </div>
-                <div className="p-4 flex-1 flex flex-col">
-                  <h3 className="font-semibold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">{p.name}</h3>
-                  <div className="mt-auto pt-3 flex items-center justify-between">
-                    <span className="font-bold text-primary text-lg">{new Intl.NumberFormat("vi-VN").format(p.base_price)}đ</span>
-                    <Button size="sm" variant="ghost" className="h-8 w-8 p-0 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white">
-                      <ShoppingBag className="h-4 w-4" />
-                    </Button>
+                    <div className="mt-auto pt-3 flex items-center justify-between">
+                      <span className="font-bold text-primary text-lg">{new Intl.NumberFormat("vi-VN").format(p.base_price)}đ</span>
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        className="h-8 w-8 p-0 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/shop/${p.slug}`);
+                        }}
+                      >
+                        <ShoppingBag className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </Link>
+              </Atropos>
             ))}
           </div>
         )}

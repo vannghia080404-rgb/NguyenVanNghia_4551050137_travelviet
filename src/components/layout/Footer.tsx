@@ -84,7 +84,7 @@ const Footer = () => {
             <ul className="space-y-2.5 text-sm text-muted-foreground">
               <li><Link to="/tours" className="hover:text-primary transition-smooth">Tours & Hoạt động</Link></li>
               <li><Link to="/destinations" className="hover:text-primary transition-smooth">Điểm đến</Link></li>
-              <li><Link to="/tours" className="hover:text-primary transition-smooth">Ưu đãi đặc biệt</Link></li>
+              <li><Link to="/promotions" className="hover:text-primary transition-smooth">Ưu đãi đặc biệt</Link></li>
               <li><Link to="/about" className="hover:text-primary transition-smooth">Cẩm nang du lịch</Link></li>
             </ul>
           </div>

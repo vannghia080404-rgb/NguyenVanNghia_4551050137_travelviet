@@ -17,10 +17,15 @@ interface TourReviewsProps {
   setHoverRating: (rating: number) => void;
   reviewText: string;
   setReviewText: (text: string) => void;
+  reviewImages: File[];
+  setReviewImages: (images: React.SetStateAction<File[]>) => void;
   handleReviewSubmit: () => void;
   isSubmitting: boolean;
   onNavigateToOrders: () => void;
 }
+
+import { useAuthStore } from "@/store/useAuthStore";
+import { getImageUrl } from "@/lib/utils";
 
 const TourReviews = ({
   avgRating,
@@ -36,10 +41,15 @@ const TourReviews = ({
   setHoverRating,
   reviewText,
   setReviewText,
+  reviewImages,
+  setReviewImages,
   handleReviewSubmit,
   isSubmitting,
   onNavigateToOrders,
 }: TourReviewsProps) => {
+  const { user } = useAuthStore();
+  const isStaff = user?.role === 'admin' || user?.role === 'staff';
+  
   return (
     <>
       <div className="flex items-center justify-between">
@@ -101,6 +111,16 @@ const TourReviews = ({
               </div>
               <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{r?.comment}</p>
 
+              {r?.images && r.images.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-3">
+                  {r.images.map((imgUrl: string, idx: number) => (
+                    <a key={idx} href={getImageUrl(imgUrl)} target="_blank" rel="noreferrer" className="h-20 w-20 rounded-xl overflow-hidden border border-border/50 block hover:opacity-80 transition-opacity">
+                      <img src={getImageUrl(imgUrl)} alt="review image" className="h-full w-full object-cover" />
+                    </a>
+                  ))}
+                </div>
+              )}
+
               {r?.admin_reply && (
                 <div className="mt-4 p-4 rounded-lg bg-secondary/50 border-l-4 border-primary/30">
                   <div className="flex items-center gap-2 mb-1">
@@ -124,9 +144,11 @@ const TourReviews = ({
       </div>
 
       {/* Write review */}
-      {bookingId ? (
+      {user ? (
         <div className="mt-8 bg-card border border-border/50 rounded-xl p-5 shadow-soft">
-          <h3 className="font-display font-semibold text-foreground">Viết đánh giá của bạn</h3>
+          <h3 className="font-display font-semibold text-foreground">
+            Viết đánh giá của bạn
+          </h3>
           <p className="mt-1 text-sm text-muted-foreground">Chia sẻ trải nghiệm của bạn để giúp khách hàng khác</p>
 
           <div className="mt-4 flex items-center gap-1">
@@ -157,23 +179,54 @@ const TourReviews = ({
             onChange={(e) => setReviewText(e.target.value)}
           />
 
+          <div className="mt-4">
+            <input 
+              type="file" 
+              multiple 
+              accept="image/*" 
+              onChange={(e) => {
+                if (e.target.files) {
+                  const filesArray = Array.from(e.target.files);
+                  setReviewImages(prev => [...prev, ...filesArray].slice(0, 3)); // Max 3 images
+                }
+              }} 
+              className="text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
+            />
+            {reviewImages.length > 0 && (
+              <div className="flex gap-2 mt-3">
+                {reviewImages.map((img, idx) => (
+                  <div key={idx} className="relative h-16 w-16 rounded-md overflow-hidden border">
+                    <img src={URL.createObjectURL(img)} alt="preview" className="h-full w-full object-cover" />
+                    <button 
+                      onClick={() => setReviewImages(reviewImages.filter((_, i) => i !== idx))}
+                      className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-0.5 hover:bg-black"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           <Button 
             variant="hero" 
             size="default" 
             className="mt-4" 
-            disabled={!reviewRating || !reviewText || isSubmitting}
+            disabled={!reviewRating || isSubmitting}
             onClick={handleReviewSubmit}
           >
             {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Send className="h-4 w-4 mr-2" />}
             Gửi đánh giá
           </Button>
+          <p className="text-xs text-muted-foreground mt-3 italic">* Chỉ những khách hàng đã trải nghiệm tour này mới có thể đánh giá.</p>
         </div>
       ) : (
         <div className="mt-8 bg-card/50 border border-border/50 rounded-xl p-5 shadow-soft text-center">
           <h3 className="font-display font-medium text-foreground">Bạn đã trải nghiệm tour này?</h3>
-          <p className="mt-2 text-sm text-muted-foreground">Vui lòng vào phần Lịch sử đơn hàng trong Hồ sơ của bạn để viết đánh giá cho tour này.</p>
-          <Button variant="outline" className="mt-4" onClick={onNavigateToOrders}>
-            Đến Lịch sử đơn hàng
+          <p className="mt-2 text-sm text-muted-foreground">Vui lòng đăng nhập để viết đánh giá cho tour này.</p>
+          <Button variant="outline" className="mt-4" onClick={() => window.location.href = '/login'}>
+            Đăng nhập ngay
           </Button>
         </div>
       )}

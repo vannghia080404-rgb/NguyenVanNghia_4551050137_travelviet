@@ -11,6 +11,83 @@ use App\Models\Voucher;
 
 class ShopController extends Controller
 {
+    public function getVouchers(Request $request)
+    {
+        $query = Voucher::where('is_active', true)
+            ->where('is_public', true)
+            ->where(function($q) {
+                $q->whereNull('valid_to')->orWhere('valid_to', '>=', now());
+            })
+            ->where(function($q) {
+                $q->whereNull('usage_limit')->orWhereColumn('used_count', '<', 'usage_limit');
+            });
+
+        // Optionally filter by scope (shop or tour or all)
+        if ($request->has('scope')) {
+            $query->whereIn('scope', [$request->scope, 'all']);
+        }
+
+        $vouchers = $query->get();
+
+        // If user is authenticated, check which vouchers are already saved
+        if ($request->user('sanctum')) {
+            $userId = $request->user('sanctum')->id;
+            $savedVoucherIds = \App\Models\UserVoucher::where('user_id', $userId)->pluck('voucher_id')->toArray();
+            
+            $vouchers = $vouchers->map(function($voucher) use ($savedVoucherIds) {
+                $voucher->is_saved = in_array($voucher->id, $savedVoucherIds);
+                return $voucher;
+            });
+        }
+
+        return response()->json(['success' => true, 'data' => $vouchers]);
+    }
+
+    public function saveVoucher(Request $request)
+    {
+        $request->validate(['voucher_id' => 'required|exists:vouchers,id']);
+        $user = $request->user();
+        
+        $voucher = Voucher::findOrFail($request->voucher_id);
+
+        if (!$voucher->is_active || ($voucher->valid_to && now() > $voucher->valid_to)) {
+            return response()->json(['success' => false, 'message' => 'Mã giảm giá không còn hoạt động hoặc đã hết hạn.'], 400);
+        }
+
+        if ($voucher->usage_limit !== null && $voucher->used_count >= $voucher->usage_limit) {
+            return response()->json(['success' => false, 'message' => 'Mã giảm giá đã hết lượt phát hành.'], 400);
+        }
+
+        $savedCount = \App\Models\UserVoucher::where('user_id', $user->id)->where('voucher_id', $voucher->id)->count();
+        if ($savedCount >= $voucher->user_limit) {
+            return response()->json(['success' => false, 'message' => 'Bạn đã lưu tối đa lượt cho mã này.'], 400);
+        }
+
+        \App\Models\UserVoucher::create([
+            'user_id' => $user->id,
+            'voucher_id' => $voucher->id,
+            'is_used' => false
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Đã lưu mã thành công!']);
+    }
+
+    public function myVouchers(Request $request)
+    {
+        $vouchers = \App\Models\UserVoucher::where('user_id', $request->user()->id)
+            ->where('is_used', false)
+            ->with('voucher')
+            ->get()
+            ->map(function($uv) {
+                return $uv->voucher;
+            })
+            ->filter(function($v) {
+                return $v && $v->is_active && (!$v->valid_to || now() <= $v->valid_to);
+            })->values();
+
+        return response()->json(['success' => true, 'data' => $vouchers]);
+    }
+
     public function checkVoucher(Request $request)
     {
         $request->validate(['code' => 'required|string']);
@@ -36,16 +113,36 @@ class ShopController extends Controller
     }
     public function index(Request $request)
     {
-        $query = Product::where('is_active', true)->with(['variants', 'images']);
+        $query = Product::where('is_active', true)
+            ->with(['variants', 'images', 'reviews'])
+            ->withCount(['reviews as review_count']);
+            
         if ($request->has('category') && $request->category !== 'all') {
             $query->where('category', $request->category);
         }
-        return response()->json(['success' => true, 'data' => $query->get()]);
+        
+        $products = $query->get()->map(function($product) {
+            $product->avg_rating = $product->reviews->avg('rating') ?? 0;
+            // Calculate sold count from ShopOrderItem
+            $product->sold_count = ShopOrderItem::whereIn('product_variant_id', $product->variants->pluck('id'))->sum('quantity');
+            unset($product->reviews); // remove reviews from list to save payload
+            return $product;
+        });
+
+        return response()->json(['success' => true, 'data' => $products]);
     }
 
     public function show($slug)
     {
-        $product = Product::where('slug', $slug)->with(['variants', 'images'])->firstOrFail();
+        $product = Product::where('slug', $slug)
+            ->with(['variants', 'images', 'reviews'])
+            ->withCount('reviews as review_count')
+            ->firstOrFail();
+            
+        $product->avg_rating = $product->reviews->avg('rating') ?? 0;
+        $product->sold_count = ShopOrderItem::whereIn('product_variant_id', $product->variants->pluck('id'))->sum('quantity');
+        unset($product->reviews); // reviews are fetched separately via another endpoint
+        
         return response()->json(['success' => true, 'data' => $product]);
     }
 
@@ -127,25 +224,68 @@ class ShopController extends Controller
         $discountAmount = 0;
         $voucherCode = null;
 
-        if ($request->filled('voucher_code')) {
-            $voucher = Voucher::where('code', $request->voucher_code)->where('is_active', true)->first();
-            if ($voucher && 
-               (!$voucher->valid_from || now() >= $voucher->valid_from) && 
-               (!$voucher->valid_to || now() <= $voucher->valid_to) &&
-               ($voucher->usage_limit === null || $voucher->used_count < $voucher->usage_limit) &&
-               $totalPrice >= $voucher->min_order_value) {
+        if ($request->filled('voucher_id')) {
+            $userVoucher = \App\Models\UserVoucher::where('user_id', $request->user()->id)
+                ->where('voucher_id', $request->voucher_id)
+                ->where('is_used', false)
+                ->with('voucher')
+                ->first();
+
+            if ($userVoucher && $userVoucher->voucher->is_active) {
+                $voucher = $userVoucher->voucher;
                 
-                if ($voucher->discount_type === 'percent') {
-                    $discountAmount = $totalPrice * ($voucher->discount_value / 100);
-                    if ($voucher->max_discount) {
-                        $discountAmount = min($discountAmount, $voucher->max_discount);
-                    }
-                } else {
-                    $discountAmount = min($voucher->discount_value, $totalPrice);
+                // Validate time
+                $validTime = (!$voucher->valid_from || now() >= $voucher->valid_from) && 
+                             (!$voucher->valid_to || now() <= $voucher->valid_to);
+                             
+                // Validate order value
+                $validValue = $totalPrice >= $voucher->min_order_value;
+                
+                // Validate quantity
+                $totalQuantity = $cartItems->sum('quantity');
+                $validQuantity = !$voucher->min_quantity || $totalQuantity >= $voucher->min_quantity;
+                
+                // Validate applies_to
+                $validAppliesTo = true;
+                if ($voucher->applies_to === 'specific_categories') {
+                    // Check if all items belong to allowed categories, or just at least one. Usually "at least one" or sum of allowed items.
+                    // For simplicity, we apply discount on the whole order if any item matches, or we calculate discount only on matched items.
+                    // I will just check if any item matches.
+                    $categories = $voucher->target_ids ?? [];
+                    $hasCategory = $cartItems->contains(function($item) use ($categories) {
+                        return in_array($item->variant->product->category, $categories);
+                    });
+                    $validAppliesTo = $hasCategory;
+                } else if ($voucher->applies_to === 'specific_products') {
+                    $productIds = $voucher->target_ids ?? [];
+                    $hasProduct = $cartItems->contains(function($item) use ($productIds) {
+                        return in_array($item->variant->product->id, $productIds);
+                    });
+                    $validAppliesTo = $hasProduct;
                 }
-                $voucherCode = $voucher->code;
-                
-                $voucher->increment('used_count');
+
+                if ($validTime && $validValue && $validQuantity && $validAppliesTo) {
+                    if ($voucher->discount_type === 'free_shipping') {
+                        $discountAmount = $shippingFee; // fully discount shipping
+                        // Ensure max discount is respected if applied to shipping
+                        if ($voucher->max_discount) {
+                            $discountAmount = min($discountAmount, $voucher->max_discount);
+                        }
+                    } else if ($voucher->discount_type === 'percent') {
+                        $discountAmount = $totalPrice * ($voucher->discount_value / 100);
+                        if ($voucher->max_discount) {
+                            $discountAmount = min($discountAmount, $voucher->max_discount);
+                        }
+                    } else {
+                        $discountAmount = min($voucher->discount_value, $totalPrice);
+                    }
+                    $voucherCode = $voucher->code;
+                    
+                    $voucher->increment('used_count');
+                    $userVoucher->is_used = true;
+                    $userVoucher->used_at = now();
+                    $userVoucher->save();
+                }
             }
         }
 
