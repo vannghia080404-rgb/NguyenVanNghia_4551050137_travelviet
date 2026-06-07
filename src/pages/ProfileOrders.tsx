@@ -154,7 +154,7 @@ const ProfileOrders = () => {
                   {/* Image */}
                   <div className="w-full sm:w-48 shrink-0">
                     <div className="aspect-[4/3] rounded-xl overflow-hidden relative">
-                      <img src={order.tour.image_url} alt={order.tour.name} className="w-full h-full object-cover" />
+                      <img src={getImageUrl(order.tour.image || order.tour.image_url)} alt={order.tour.name} className="w-full h-full object-cover" />
                       <div className="absolute top-2 left-2 flex gap-1">
                         <span className={cn("px-2 py-1 rounded-md text-[10px] font-bold uppercase backdrop-blur-md", statusConfig[order.status]?.class)}>
                           {statusConfig[order.status]?.label}
