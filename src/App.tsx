@@ -60,6 +60,7 @@ import NotFound from "./pages/NotFound.tsx";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useUIStore } from "@/store/useUIStore";
 import ChatWidget from "@/components/ChatWidget";
+import { Agentation } from "agentation";
 
 const queryClient = new QueryClient();
 
@@ -163,6 +164,7 @@ const App = () => {
                   <Sonner position="top-right" theme="system" className="font-sans" />
                   <Toaster />
                   <ChatWidget />
+                  <Agentation />
                 </div>
               </AuthInitializer>
             </BrowserRouter>
