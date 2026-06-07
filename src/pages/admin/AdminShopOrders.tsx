@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Package, Truck, CheckCircle2, XCircle, Clock, MapPin, User, Search } from "lucide-react";
 import { getImageUrl } from "@/lib/utils";
 import AdminLayout from "@/components/admin/AdminLayout";
-import api from "@/lib/api";
+import api, { adminShopOrderAPIs } from "@/lib/api";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -32,9 +32,18 @@ export default function AdminShopOrders() {
   });
 
   const updateStatusMutation = useMutation({
-    mutationFn: (data: { id: number, status: string }) => api.put(`/admin/shop/orders/${data.id}/status`, { status: data.status }),
+    mutationFn: (data: { id: number, status: string }) => adminShopOrderAPIs.updateStatus(data.id, data.status),
     onSuccess: () => {
       toast.success("Đã cập nhật trạng thái đơn hàng");
+      queryClient.invalidateQueries({ queryKey: ["admin-shop-orders"] });
+    },
+    onError: () => toast.error("Cập nhật thất bại"),
+  });
+
+  const updatePaymentStatusMutation = useMutation({
+    mutationFn: (data: { id: number, payment_status: string }) => adminShopOrderAPIs.updatePaymentStatus(data.id, data.payment_status),
+    onSuccess: () => {
+      toast.success("Đã duyệt biên lai (Đã nhận tiền)!");
       queryClient.invalidateQueries({ queryKey: ["admin-shop-orders"] });
     },
     onError: () => toast.error("Cập nhật thất bại"),
@@ -62,15 +71,25 @@ export default function AdminShopOrders() {
     o.shipping_name.toLowerCase().includes(search.toLowerCase())
   ) || [];
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (order: any) => {
+    const status = order.status;
+    let badge = <Badge variant="outline">{status}</Badge>;
     switch (status) {
-      case "pending": return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100"><Clock className="w-3 h-3 mr-1" /> Chờ xác nhận</Badge>;
-      case "preparing": return <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100"><Package className="w-3 h-3 mr-1" /> Đang chuẩn bị</Badge>;
-      case "shipping": return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100"><Truck className="w-3 h-3 mr-1" /> Đang giao</Badge>;
-      case "completed": return <Badge className="bg-green-100 text-green-800 hover:bg-green-100"><CheckCircle2 className="w-3 h-3 mr-1" /> Hoàn thành</Badge>;
-      case "cancelled": return <Badge className="bg-red-100 text-red-800 hover:bg-red-100"><XCircle className="w-3 h-3 mr-1" /> Đã hủy</Badge>;
-      default: return <Badge>{status}</Badge>;
+      case "pending": badge = <Badge variant="outline" className="text-yellow-600 border-yellow-200 bg-yellow-50">Chờ xác nhận</Badge>; break;
+      case "processing":
+      case "confirmed":
+      case "preparing": badge = <Badge variant="outline" className="text-orange-600 border-orange-200 bg-orange-50">Đang chuẩn bị</Badge>; break;
+      case "shipping": badge = <Badge variant="outline" className="text-blue-600 border-blue-200 bg-blue-50">Đang giao hàng</Badge>; break;
+      case "completed": badge = <Badge variant="outline" className="text-green-600 border-green-200 bg-green-50">Hoàn thành</Badge>; break;
+      case "cancelled": badge = <Badge variant="outline" className="text-red-600 border-red-200 bg-red-50">Đã hủy</Badge>; break;
     }
+
+    let paymentBadge = null;
+    if (order.payment_status === 'unpaid') paymentBadge = <Badge variant="outline" className="ml-2 text-orange-600 border-orange-200 bg-orange-50">Chưa TT</Badge>;
+    else if (order.payment_status === 'paid') paymentBadge = <Badge variant="outline" className="ml-2 text-green-600 border-green-200 bg-green-50">Đã TT</Badge>;
+    else if (order.payment_status === 'refunded') paymentBadge = <Badge variant="outline" className="ml-2 text-purple-600 border-purple-200 bg-purple-50">Hoàn tiền</Badge>;
+
+    return <div>{badge}{paymentBadge}</div>;
   };
 
   return (
@@ -122,7 +141,7 @@ export default function AdminShopOrders() {
                       {new Intl.NumberFormat("vi-VN").format(order.total_price)}đ
                     </td>
                     <td className="px-6 py-4">
-                      {getStatusBadge(order.status)}
+                      {getStatusBadge(order)}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <Dialog>
@@ -170,7 +189,7 @@ export default function AdminShopOrders() {
                                 <h4 className="font-semibold text-sm mb-3 flex items-center gap-2 border-b border-border pb-2">Cập nhật trạng thái</h4>
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                                   <button onClick={() => updateStatusMutation.mutate({ id: order.id, status: 'pending' })} className={`p-2 text-xs rounded-lg border ${order.status === 'pending' ? 'bg-yellow-100 border-yellow-300 text-yellow-800 font-bold' : 'bg-background hover:bg-secondary'}`}>Chờ xác nhận</button>
-                                  <button onClick={() => updateStatusMutation.mutate({ id: order.id, status: 'preparing' })} className={`p-2 text-xs rounded-lg border ${order.status === 'preparing' ? 'bg-orange-100 border-orange-300 text-orange-800 font-bold' : 'bg-background hover:bg-secondary'}`}>Đang chuẩn bị</button>
+                                  <button onClick={() => updateStatusMutation.mutate({ id: order.id, status: 'processing' })} className={`p-2 text-xs rounded-lg border ${(order.status === 'preparing' || order.status === 'processing' || order.status === 'confirmed') ? 'bg-orange-100 border-orange-300 text-orange-800 font-bold' : 'bg-background hover:bg-secondary'}`}>Đang chuẩn bị</button>
                                   <button onClick={() => updateStatusMutation.mutate({ id: order.id, status: 'shipping' })} className={`p-2 text-xs rounded-lg border ${order.status === 'shipping' ? 'bg-blue-100 border-blue-300 text-blue-800 font-bold' : 'bg-background hover:bg-secondary'}`}>Đang giao hàng</button>
                                   <button onClick={() => updateStatusMutation.mutate({ id: order.id, status: 'completed' })} className={`p-2 text-xs rounded-lg border ${order.status === 'completed' ? 'bg-green-100 border-green-300 text-green-800 font-bold' : 'bg-background hover:bg-secondary'}`}>Hoàn thành</button>
                                   <button onClick={() => updateStatusMutation.mutate({ id: order.id, status: 'cancelled' })} className={`p-2 text-xs rounded-lg border ${order.status === 'cancelled' ? 'bg-red-100 border-red-300 text-red-800 font-bold' : 'bg-background hover:bg-secondary'}`}>Hủy đơn</button>
@@ -178,7 +197,14 @@ export default function AdminShopOrders() {
                               </div>
                               {order.payment_receipt && (
                                 <div className="mt-4 border-t border-border pt-4">
-                                  <h4 className="font-semibold text-sm mb-2">Biên lai thanh toán</h4>
+                                  <div className="flex items-center justify-between mb-2">
+                                    <h4 className="font-semibold text-sm">Biên lai thanh toán</h4>
+                                    {order.payment_status !== 'paid' && (
+                                      <button onClick={() => updatePaymentStatusMutation.mutate({ id: order.id, payment_status: 'paid' })} className="text-xs bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-full shadow-sm font-medium transition-colors">
+                                        Duyệt Bill (Đã nhận tiền)
+                                      </button>
+                                    )}
+                                  </div>
                                   <a href={order.payment_receipt} target="_blank" rel="noreferrer" className="block border rounded-xl overflow-hidden hover:opacity-80 transition-opacity max-w-[200px]">
                                     <img src={order.payment_receipt} alt="Receipt" className="w-full h-auto object-contain" />
                                   </a>

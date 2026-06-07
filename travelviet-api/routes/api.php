@@ -72,6 +72,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/shop/check-voucher', [\App\Http\Controllers\ShopController::class, 'checkVoucher']);
     Route::get('/shop/orders', [\App\Http\Controllers\ShopController::class, 'getOrders']);
     Route::post('/shop/orders/{id}/receipt', [\App\Http\Controllers\ShopController::class, 'uploadReceipt']);
+    Route::post('/shop/orders/{id}/pay', [\App\Http\Controllers\ShopController::class, 'generatePaymentUrl']);
+    Route::delete('/shop/orders/{id}/cancel', [\App\Http\Controllers\ShopController::class, 'cancelOrder']);
+    Route::post('/shop/orders/{id}/confirm-received', [\App\Http\Controllers\ShopController::class, 'confirmReceived']);
 
     // Wishlist
     Route::get('/wishlist', [WishlistController::class, 'index']);
@@ -192,6 +195,7 @@ Route::middleware('auth:sanctum')->group(function () {
         
         Route::get('/shop/orders', [\App\Http\Controllers\AdminShopController::class, 'getOrders']);
         Route::put('/shop/orders/{id}/status', [\App\Http\Controllers\AdminShopController::class, 'updateOrderStatus']);
+        Route::put('/shop/orders/{id}/payment-status', [\App\Http\Controllers\AdminShopController::class, 'updatePaymentStatus']);
         Route::post('/shop/orders/{id}/trackings', [\App\Http\Controllers\AdminShopController::class, 'addTracking']);
     });
 });

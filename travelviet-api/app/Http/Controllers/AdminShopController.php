@@ -120,9 +120,18 @@ class AdminShopController extends Controller
 
     public function updateOrderStatus(Request $request, $id)
     {
-        $request->validate(['status' => 'required|in:pending,preparing,shipping,completed,cancelled']);
+        $request->validate(['status' => 'required|in:pending,confirmed,processing,shipping,completed,cancelled']);
         $order = \App\Models\ShopOrder::findOrFail($id);
         $order->status = $request->status;
+        $order->save();
+        return response()->json(['success' => true]);
+    }
+
+    public function updatePaymentStatus(Request $request, $id)
+    {
+        $request->validate(['payment_status' => 'required|in:unpaid,paid,refunded']);
+        $order = \App\Models\ShopOrder::findOrFail($id);
+        $order->payment_status = $request->payment_status;
         $order->save();
         return response()->json(['success' => true]);
     }

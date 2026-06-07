@@ -127,6 +127,14 @@ export const adminBookingAPIs = {
   cancel: (id: number) => api.delete(`/admin/bookings/${id}`)
 };
 
+// ============ Admin Shop Order APIs ============
+export const adminShopOrderAPIs = {
+  updateStatus: (id: number, status: string) => 
+    api.put(`/admin/shop/orders/${id}/status`, { status }),
+  updatePaymentStatus: (id: number, paymentStatus: string) =>
+    api.put(`/admin/shop/orders/${id}/payment-status`, { payment_status: paymentStatus }),
+};
+
 // ============ Admin User APIs ============
 export const adminUserAPIs = {
   list: (params?: any) => api.get('/admin/users', { params }),
@@ -187,4 +195,11 @@ export const paymentAPIs = {
     return api.put(`/admin/payment-methods/${id}`, data);
   },
   deletePaymentMethod: (id: number) => api.delete(`/admin/payment-methods/${id}`),
+};
+
+// ============ Shop Order APIs (Customer) ============
+export const shopOrderAPIs = {
+  pay: (id: number) => api.post(`/shop/orders/${id}/pay`),
+  cancel: (id: number) => api.delete(`/shop/orders/${id}/cancel`),
+  confirmReceived: (id: number) => api.post(`/shop/orders/${id}/confirm-received`),
 };

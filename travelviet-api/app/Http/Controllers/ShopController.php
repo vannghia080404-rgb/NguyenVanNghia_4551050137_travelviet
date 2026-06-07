@@ -229,4 +229,79 @@ class ShopController extends Controller
             return response()->json(['success' => false, 'message' => 'Lỗi upload ảnh'], 500);
         }
     }
+
+    public function generatePaymentUrl(Request $request, $id)
+    {
+        $order = ShopOrder::where('user_id', $request->user()->id)->findOrFail($id);
+        
+        if ($order->payment_status === 'paid') {
+            return response()->json(['success' => false, 'message' => 'Đơn hàng đã thanh toán'], 400);
+        }
+
+        $paymentMethod = \App\Models\PaymentMethod::find($order->payment_method);
+        
+        if ($paymentMethod && $paymentMethod->type === 'vnpay') {
+            $vnpayService = new \App\Services\VNPayService();
+            $paymentUrl = $vnpayService->createPaymentUrl([
+                'order_id' => $order->order_code,
+                'order_desc' => "Thanh toan don hang Shop " . $order->order_code,
+                'amount' => $order->total_price - $order->discount_amount + $order->shipping_fee,
+                'return_url' => env('VNP_RETURN_URL'),
+            ]);
+            return response()->json(['success' => true, 'payment_url' => $paymentUrl]);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Phương thức thanh toán không hỗ trợ lấy URL trực tiếp'], 400);
+    }
+
+    public function cancelOrder(Request $request, $id)
+    {
+        $order = ShopOrder::where('user_id', $request->user()->id)->with('items.variant')->findOrFail($id);
+        
+        if ($order->status !== 'pending') {
+            return response()->json(['success' => false, 'message' => 'Không thể hủy đơn hàng ở trạng thái này'], 400);
+        }
+
+        $order->status = 'cancelled';
+        if ($order->payment_status === 'paid') {
+            $order->payment_status = 'refunded';
+        }
+        $order->save();
+
+        foreach ($order->items as $item) {
+            if ($item->variant) {
+                $item->variant->increment('stock', $item->quantity);
+            }
+        }
+
+        \App\Models\ShopOrderTracking::create([
+            'shop_order_id' => $order->id,
+            'title' => 'Đã hủy đơn hàng',
+            'description' => 'Khách hàng đã hủy đơn',
+            'location' => 'Hệ thống'
+        ]);
+
+        return response()->json(['success' => true]);
+    }
+
+    public function confirmReceived(Request $request, $id)
+    {
+        $order = ShopOrder::where('user_id', $request->user()->id)->findOrFail($id);
+        
+        if ($order->status !== 'shipping') {
+            return response()->json(['success' => false, 'message' => 'Đơn hàng phải ở trạng thái đang giao mới có thể xác nhận'], 400);
+        }
+
+        $order->status = 'completed';
+        $order->save();
+
+        \App\Models\ShopOrderTracking::create([
+            'shop_order_id' => $order->id,
+            'title' => 'Đã nhận được hàng',
+            'description' => 'Khách hàng đã xác nhận nhận hàng thành công',
+            'location' => 'Người mua'
+        ]);
+
+        return response()->json(['success' => true]);
+    }
 }
