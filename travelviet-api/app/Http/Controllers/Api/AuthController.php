@@ -53,6 +53,12 @@ class AuthController extends Controller
             Mail::to($user->email)->send(new VerifyRegistrationMail($otp));
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Lỗi gửi mail đăng ký: ' . $e->getMessage());
+            // Xóa user vừa tạo vì không gửi được OTP
+            $user->delete();
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi hệ thống: Không thể gửi email xác thực. Vui lòng thử lại sau.'
+            ], 500);
         }
 
         return response()->json([
@@ -123,6 +129,10 @@ class AuthController extends Controller
             Mail::to($user->email)->send(new VerifyRegistrationMail($otp));
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Lỗi gửi lại mail OTP: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi hệ thống: Không thể gửi email xác thực. Vui lòng thử lại sau.'
+            ], 500);
         }
 
         return response()->json([
