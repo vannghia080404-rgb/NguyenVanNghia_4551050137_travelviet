@@ -16,7 +16,7 @@ export default function Shop() {
     queryFn: () => api.get(`/shop/products?category=${category}`).then((res) => res.data.data),
   });
 
-  const filteredProducts = products?.filter((p: any) => p.name.toLowerCase().includes(search.toLowerCase())) || [];
+  const filteredProducts = Array.isArray(products) ? products.filter((p: any) => p.name.toLowerCase().includes(search.toLowerCase())) : [];
 
   return (
     <main className="min-h-screen bg-background pt-24 pb-16">

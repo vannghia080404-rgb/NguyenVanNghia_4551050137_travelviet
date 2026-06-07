@@ -66,10 +66,10 @@ export default function AdminShopOrders() {
     onError: () => toast.error("Thêm hành trình thất bại"),
   });
 
-  const filteredOrders = orders?.filter((o: any) => 
+  const filteredOrders = Array.isArray(orders) ? orders.filter((o: any) => 
     o.order_code.toLowerCase().includes(search.toLowerCase()) || 
     o.shipping_name.toLowerCase().includes(search.toLowerCase())
-  ) || [];
+  ) : [];
 
   const getStatusBadge = (order: any) => {
     const status = order.status;

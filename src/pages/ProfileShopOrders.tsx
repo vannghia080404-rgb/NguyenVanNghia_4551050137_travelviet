@@ -94,7 +94,7 @@ export default function ProfileShopOrders() {
     }
   };
 
-  const filteredOrders = orders?.filter((order: any) => {
+  const filteredOrders = Array.isArray(orders) ? orders.filter((order: any) => {
     if (activeTab === 'all') return true;
     
     const isCash = order.paymentMethod?.type === 'cash' || order.payment_method === 'cash';
@@ -107,7 +107,7 @@ export default function ProfileShopOrders() {
     if (activeTab === 'cancelled') return order.status === 'cancelled';
     
     return true;
-  });
+  }) : [];
 
   const getStatusText = (order: any) => {
     if (order.status === 'cancelled') return { text: 'ĐÃ HỦY', color: 'text-red-500' };
