@@ -48,4 +48,9 @@ class Booking extends Model
     {
         return $this->hasMany(Payment::class);
     }
+
+    public function paymentMethod()
+    {
+        return $this->belongsTo(PaymentMethod::class, 'payment_method');
+    }
 }
