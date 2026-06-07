@@ -209,21 +209,34 @@ export default function ShopCheckout() {
 
             <div className="bg-card rounded-2xl border border-border p-6 shadow-sm">
               <h2 className="text-xl font-bold mb-4 border-b border-border pb-3">Phương thức thanh toán</h2>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-3">
                 {paymentMethods.length > 0 ? (
                   paymentMethods.map((method: any) => (
-                    <label key={method.id} className={`cursor-pointer border-2 rounded-xl p-4 flex flex-col items-center text-center justify-center gap-2 transition-all ${form.payment_method === method.id.toString() ? 'border-primary bg-primary/5 text-primary' : 'border-border bg-card hover:border-primary/50'}`}>
-                      <input type="radio" className="hidden" name="payment" value={method.id.toString()} checked={form.payment_method === method.id.toString()} onChange={() => setForm({...form, payment_method: method.id.toString()})} />
-                      {method.qr_code_url ? (
-                        <img src={method.qr_code_url} alt={method.name} className="h-8 w-12 object-cover rounded shadow-sm" />
-                      ) : (
-                        method.type === 'cash' ? <Banknote className="h-6 w-6" /> : <CreditCard className="h-6 w-6" />
-                      )}
-                      <span className="font-semibold text-sm line-clamp-2">{method.name}</span>
+                    <label key={method.id} className="flex items-center gap-3 p-4 rounded-xl border-2 border-border cursor-pointer hover:border-primary/40 transition-all"
+                           style={form.payment_method === method.id.toString() ? { borderColor: 'hsl(var(--primary))', backgroundColor: 'hsl(var(--primary) / 0.05)' } : {}}>
+                      <input 
+                        type="radio" 
+                        name="payment" 
+                        value={method.id.toString()} 
+                        checked={form.payment_method === method.id.toString()} 
+                        onChange={() => setForm({...form, payment_method: method.id.toString()})} 
+                        className="accent-primary" 
+                      />
+                      <div className={`h-10 w-16 rounded-md flex items-center justify-center shrink-0 border ${!method.qr_code_url ? 'bg-secondary text-secondary-foreground' : ''}`}>
+                        {method.qr_code_url ? (
+                          <img src={method.qr_code_url} alt={method.name} className="h-full w-full object-cover rounded-md" />
+                        ) : (
+                          <CreditCard className="w-5 h-5 opacity-50" />
+                        )}
+                      </div>
+                      <div>
+                        <div className="font-semibold text-sm text-foreground">{method.name}</div>
+                        <div className="text-xs text-muted-foreground line-clamp-1">{method.description || (method.type === 'bank_transfer' ? 'Chuyển khoản ngân hàng' : method.type === 'e_wallet' ? 'Ví điện tử' : 'Tiền mặt')}</div>
+                      </div>
                     </label>
                   ))
                 ) : (
-                  <div className="col-span-2 text-sm text-muted-foreground text-center p-4">Chưa có phương thức thanh toán.</div>
+                  <div className="text-sm text-muted-foreground p-4 border rounded-xl text-center">Chưa có phương thức thanh toán nào khả dụng.</div>
                 )}
               </div>
             </div>
