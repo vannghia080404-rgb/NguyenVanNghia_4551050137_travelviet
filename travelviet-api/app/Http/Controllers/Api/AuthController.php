@@ -57,7 +57,7 @@ class AuthController extends Controller
             $user->delete();
             return response()->json([
                 'success' => false,
-                'message' => 'Lỗi hệ thống: Không thể gửi email xác thực. Vui lòng thử lại sau.'
+                'message' => 'Lỗi hệ thống: Không thể gửi email xác thực. Chi tiết lỗi: ' . $e->getMessage()
             ], 500);
         }
 
@@ -131,7 +131,7 @@ class AuthController extends Controller
             \Illuminate\Support\Facades\Log::error('Lỗi gửi lại mail OTP: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Lỗi hệ thống: Không thể gửi email xác thực. Vui lòng thử lại sau.'
+                'message' => 'Lỗi hệ thống: Không thể gửi email xác thực. Chi tiết lỗi: ' . $e->getMessage()
             ], 500);
         }
 
