@@ -12,11 +12,13 @@ export default function Cart() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data: cartItems, isLoading } = useQuery({
+  const { data: rawCartItems, isLoading } = useQuery({
     queryKey: ["cart"],
     queryFn: () => api.get("/shop/cart").then((res) => res.data.data),
     enabled: !!user,
   });
+
+  const cartItems = Array.isArray(rawCartItems) ? rawCartItems : [];
 
   const removeMutation = useMutation({
     mutationFn: (id: number) => api.delete(`/shop/cart/${id}`),

@@ -73,11 +73,13 @@ export default function ShopCheckout() {
     }
   }, [paymentMethods, form.payment_method]);
 
-  const { data: cartItems, isLoading } = useQuery({
+  const { data: rawCartItems, isLoading } = useQuery({
     queryKey: ["cart"],
     queryFn: () => api.get("/shop/cart").then((res) => res.data.data),
     enabled: !!user,
   });
+
+  const cartItems = Array.isArray(rawCartItems) ? rawCartItems : [];
 
   const applyVoucherMutation = useMutation({
     mutationFn: (code: string) => api.post("/shop/check-voucher", { code }),

@@ -75,7 +75,8 @@ const Tours = () => {
     }
   });
 
-  const apiTours = response?.data || [];
+  const rawData = response?.data;
+  const apiTours = Array.isArray(rawData) ? rawData : [];
   const meta = response?.meta;
 
   const [keyword, setKeyword] = useState(searchParam || "");

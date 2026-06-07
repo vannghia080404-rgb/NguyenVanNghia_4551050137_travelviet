@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import { Heart, Globe2, Users, Award, Leaf, Quote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
@@ -18,6 +19,18 @@ const values = [
 
 const About = () => {
   const { settings } = useSettingsStore();
+  const { hash } = useLocation();
+
+  useEffect(() => {
+    if (hash) {
+      const element = document.getElementById(hash.replace('#', ''));
+      if (element) {
+        setTimeout(() => element.scrollIntoView({ behavior: "smooth" }), 100);
+      }
+    } else {
+      window.scrollTo(0, 0);
+    }
+  }, [hash]);
 
   const { data: teamData } = useQuery({
     queryKey: ['team-members-public'],
@@ -174,6 +187,31 @@ const About = () => {
           </div>
         )}
       </section>
+
+      {/* Terms & Privacy Blocks */}
+      {settings.page_terms && (
+        <section id="terms" className="container py-20 border-t border-border/50">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="font-display text-3xl font-bold text-primary mb-8">Điều khoản dịch vụ</h2>
+            <div
+              className="prose prose-sm md:prose-base max-w-none text-muted-foreground leading-relaxed prose-headings:text-foreground prose-a:text-primary"
+              dangerouslySetInnerHTML={{ __html: sanitizeHTML(settings.page_terms) }}
+            />
+          </div>
+        </section>
+      )}
+
+      {settings.page_privacy && (
+        <section id="privacy" className="container py-20 border-t border-border/50">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="font-display text-3xl font-bold text-primary mb-8">Chính sách bảo mật</h2>
+            <div
+              className="prose prose-sm md:prose-base max-w-none text-muted-foreground leading-relaxed prose-headings:text-foreground prose-a:text-primary"
+              dangerouslySetInnerHTML={{ __html: sanitizeHTML(settings.page_privacy) }}
+            />
+          </div>
+        </section>
+      )}
     </main>
   );
 };

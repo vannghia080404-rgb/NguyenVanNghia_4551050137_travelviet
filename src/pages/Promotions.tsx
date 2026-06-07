@@ -16,7 +16,7 @@ export default function Promotions() {
     }
   });
 
-  const promotions = response?.data || [];
+  const promotions = Array.isArray(response?.data) ? response.data : [];
   const location = useLocation();
   const navigate = useNavigate();
 

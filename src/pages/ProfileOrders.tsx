@@ -51,7 +51,8 @@ const ProfileOrders = () => {
     }
   });
 
-  const apiOrders = response?.data || [];
+  const rawData = response?.data;
+  const apiOrders = Array.isArray(rawData) ? rawData : [];
 
   const handleCancel = async (bookingCode: string) => {
     if (!window.confirm("Bạn có chắc chắn muốn huỷ đơn đặt này không?")) return;

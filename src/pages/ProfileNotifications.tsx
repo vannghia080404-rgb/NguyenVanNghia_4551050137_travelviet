@@ -15,7 +15,8 @@ const ProfileNotifications = () => {
     queryFn: () => api.get("/notifications").then((r) => r.data),
   });
 
-  const notifications = response?.data || [];
+  const rawNotifications = response?.data;
+  const notifications = Array.isArray(rawNotifications) ? rawNotifications : [];
 
   const markAsRead = useMutation({
     mutationFn: (id: string) => api.put(`/notifications/${id}/read`),
