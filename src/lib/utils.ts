@@ -28,11 +28,24 @@ export function validateImageFile(file: File): { valid: boolean; error?: string 
 }
 export function getImageUrl(path: string | null | undefined): string {
   if (!path) return "";
+  
+  // Force HTTPS for mixed content issues
+  if (path.startsWith("http://travelviet.onrender.com")) {
+    return path.replace("http://", "https://");
+  }
+  
   if (path.startsWith("http")) return path;
   if (path.startsWith("blob:")) return path;
   if (path.startsWith("data:image")) return path;
   
   // Clean up double slashes
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
-  return `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://127.0.0.1:8000'}${cleanPath}`;
+  const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://127.0.0.1:8000';
+  
+  // Enforce https if baseUrl is production
+  if (baseUrl.includes('onrender.com')) {
+    return `${baseUrl.replace('http://', 'https://')}${cleanPath}`;
+  }
+  
+  return `${baseUrl}${cleanPath}`;
 }
