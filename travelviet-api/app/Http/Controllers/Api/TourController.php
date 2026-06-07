@@ -79,13 +79,31 @@ class TourController extends Controller
         }
 
         if ($request->has('featured')) {
-            $query->where('featured', true)
-                  ->withCount(['bookings', 'wishlists'])
-                ->orderBy('featured', 'desc')
-                ->orderBy('rating', 'desc')
-                ->orderBy('wishlists_count', 'desc')
-                ->orderBy('reviews_count', 'desc')
-                ->orderBy('bookings_count', 'desc');
+            $query->where('featured', true);
+        }
+
+        // Luôn withCount bookings để phục vụ việc sắp xếp
+        $query->withCount(['bookings', 'wishlists']);
+
+        // Ưu tiên hiển thị các tours có Nhãn nổi bật (Badge) đầu tiên
+        $query->orderByRaw('CASE WHEN badge IS NOT NULL AND badge != "" THEN 1 ELSE 0 END DESC');
+
+        // Sắp xếp theo tham số sort
+        $sort = $request->input('sort', 'popular');
+
+        if ($sort === 'popular') {
+            // Sắp xếp phổ biến dựa vào tương tác từ khách hàng: số lượng đặt, đánh giá, lượt thích
+            $query->orderBy('bookings_count', 'desc')
+                  ->orderBy('rating', 'desc')
+                  ->orderBy('reviews_count', 'desc')
+                  ->orderBy('wishlists_count', 'desc');
+        } elseif ($sort === 'rating') {
+            $query->orderBy('rating', 'desc')
+                  ->orderBy('reviews_count', 'desc');
+        } elseif ($sort === 'price-asc') {
+            $query->orderBy('price', 'asc');
+        } elseif ($sort === 'price-desc') {
+            $query->orderBy('price', 'desc');
         }
 
         $perPage = $request->input('per_page', 6);
