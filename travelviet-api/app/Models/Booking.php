@@ -10,9 +10,19 @@ class Booking extends Model
     use HasFactory;
 
     protected $fillable = [
-        'booking_code', 'user_id', 'tour_id', 'hotel_id', 'departure_date', 'num_people',
-        'total_price', 'status', 'payment_method', 'payment_status',
-        'payment_receipt', 'payment_receipt_verified_at', 'admin_notes'
+        'booking_code',
+        'user_id',
+        'tour_id',
+        'hotel_id',
+        'departure_date',
+        'num_people',
+        'total_price',
+        'status',
+        'payment_method',
+        'payment_status',
+        'payment_receipt',
+        'payment_receipt_verified_at',
+        'admin_notes'
     ];
 
     protected $casts = [
@@ -37,10 +47,5 @@ class Booking extends Model
     public function payments()
     {
         return $this->hasMany(Payment::class);
-    }
-
-    public function paymentMethod()
-    {
-        return $this->belongsTo(PaymentMethod::class, 'payment_method');
     }
 }

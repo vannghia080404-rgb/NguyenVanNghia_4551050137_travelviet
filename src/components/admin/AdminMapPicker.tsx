@@ -119,9 +119,6 @@ export const AdminMapPicker = ({ value, onChange, tourName = "", destinationName
             className="pl-10 h-11 border-border/80"
           />
         </div>
-        <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-          <span className="text-amber-500 font-semibold">Mẹo:</span> Bạn có thể dán đường dẫn chia sẻ ( <code className="bg-secondary px-1 py-0.5 rounded text-amber-500">https://maps.app.goo.gl/...</code> ) hoặc **Mã nhúng bản đồ HTML** ( <code className="bg-secondary px-1 py-0.5 rounded text-amber-500">&lt;iframe src=...&gt;</code> ) được copy từ Google Maps để hiển thị bản đồ sắc nét, đầy đủ thông tin nhất.
-        </p>
       </div>
 
       {/* 2. Xem trước bản đồ thực tế */}

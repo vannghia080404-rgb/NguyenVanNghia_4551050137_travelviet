@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import { useNavigate } from "react-router-dom";
 import "leaflet/dist/leaflet.css";
@@ -35,6 +37,8 @@ export default function ProfileShopOrders() {
   const [activeTab, setActiveTab] = useState('all');
   const [uploadingId, setUploadingId] = useState<number | null>(null);
   const [processingId, setProcessingId] = useState<number | null>(null);
+  const [cancelModal, setCancelModal] = useState<{ show: boolean; orderId: number | null; reason: string }>({ show: false, orderId: null, reason: '' });
+  const [viewReasonModal, setViewReasonModal] = useState<{ show: boolean; reason: string }>({ show: false, reason: '' });
 
   const { data: orders, isLoading } = useQuery({
     queryKey: ["shop-orders"],
@@ -59,9 +63,9 @@ export default function ProfileShopOrders() {
   });
 
   const actionMutation = useMutation({
-    mutationFn: async ({ action, id }: { action: 'pay' | 'cancel' | 'confirm', id: number }) => {
+    mutationFn: async ({ action, id, cancelReason }: { action: 'pay' | 'cancel' | 'confirm', id: number, cancelReason?: string }) => {
       if (action === 'pay') return shopOrderAPIs.pay(id);
-      if (action === 'cancel') return shopOrderAPIs.cancel(id);
+      if (action === 'cancel') return shopOrderAPIs.cancel(id, cancelReason || 'Khách hàng đã hủy đơn');
       if (action === 'confirm') return shopOrderAPIs.confirmReceived(id);
     },
     onMutate: (variables) => setProcessingId(variables.id),
@@ -212,11 +216,7 @@ export default function ProfileShopOrders() {
                         {statusInfo.text === 'CHỜ THANH TOÁN' && (
                           <>
                             <Button variant="outline" className="h-10 px-6 text-sm hover:bg-slate-50"
-                                    onClick={() => {
-                                      if (confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')) {
-                                        actionMutation.mutate({ action: 'cancel', id: order.id });
-                                      }
-                                    }}
+                                    onClick={() => setCancelModal({ show: true, orderId: order.id, reason: '' })}
                                     disabled={processingId === order.id}>
                               Hủy đơn hàng
                             </Button>
@@ -258,11 +258,7 @@ export default function ProfileShopOrders() {
                         {statusInfo.text === 'CHỜ XÁC NHẬN' && (
                           <>
                             <Button variant="outline" className="h-10 px-6 text-sm hover:bg-slate-50"
-                                    onClick={() => {
-                                      if (confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')) {
-                                        actionMutation.mutate({ action: 'cancel', id: order.id });
-                                      }
-                                    }}
+                                    onClick={() => setCancelModal({ show: true, orderId: order.id, reason: '' })}
                                     disabled={processingId === order.id}>
                               Hủy đơn hàng
                             </Button>
@@ -305,7 +301,10 @@ export default function ProfileShopOrders() {
                         {/* CANCELLED ACTIONS */}
                         {statusInfo.text === 'ĐÃ HỦY' && (
                           <>
-                            <Button variant="outline" className="h-10 px-6 text-sm hover:bg-slate-50">Xem chi tiết hủy</Button>
+                            <Button variant="outline" className="h-10 px-6 text-sm hover:bg-slate-50"
+                                            onClick={() => setViewReasonModal({ show: true, reason: order.cancel_reason || 'Không có lý do' })}>
+                              Xem chi tiết hủy
+                            </Button>
                             <Button variant="hero" className="h-10 px-6 font-semibold shadow-sm text-sm">Mua lại</Button>
                           </>
                         )}
@@ -337,6 +336,60 @@ export default function ProfileShopOrders() {
           )}
         </div>
       </div>
+
+      {/* Cancel Reason Modal */}
+      <Dialog open={cancelModal.show} onOpenChange={(open) => !open && setCancelModal({ show: false, orderId: null, reason: '' })}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Lý do hủy đơn hàng</DialogTitle>
+            <DialogDescription>Vui lòng chọn hoặc nhập lý do hủy đơn. Thao tác này không thể hoàn tác.</DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <div className="flex flex-col gap-2">
+              {['Muốn thay đổi địa chỉ giao hàng', 'Muốn đổi sản phẩm khác', 'Tìm thấy giá rẻ hơn ở nơi khác', 'Đổi ý, không muốn mua nữa'].map(r => (
+                <Button key={r} variant={cancelModal.reason === r ? "default" : "outline"} className="justify-start text-left font-normal" onClick={() => setCancelModal({ ...cancelModal, reason: r })}>
+                  {r}
+                </Button>
+              ))}
+            </div>
+            <Input 
+              placeholder="Hoặc nhập lý do khác..." 
+              value={cancelModal.reason} 
+              onChange={e => setCancelModal({ ...cancelModal, reason: e.target.value })}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCancelModal({ show: false, orderId: null, reason: '' })}>Đóng</Button>
+            <Button variant="destructive" 
+                    disabled={!cancelModal.reason.trim() || processingId === cancelModal.orderId}
+                    onClick={() => {
+                      if (cancelModal.orderId) {
+                        actionMutation.mutate({ action: 'cancel', id: cancelModal.orderId, cancelReason: cancelModal.reason });
+                        setCancelModal({ show: false, orderId: null, reason: '' });
+                      }
+                    }}>
+              {processingId === cancelModal.orderId ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Xác nhận hủy
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Cancel Reason Modal */}
+      <Dialog open={viewReasonModal.show} onOpenChange={(open) => !open && setViewReasonModal({ show: false, reason: '' })}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Chi tiết hủy đơn hàng</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-sm font-medium text-slate-700">Lý do hủy:</p>
+            <p className="text-base mt-1 p-3 bg-slate-50 rounded-md border border-slate-100">{viewReasonModal.reason}</p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setViewReasonModal({ show: false, reason: '' })}>Đóng</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </ProfileLayout>
   );
 }

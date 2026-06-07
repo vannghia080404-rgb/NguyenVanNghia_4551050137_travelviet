@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class ShopOrder extends Model
 {
     use HasFactory;
-    protected $fillable = ['user_id', 'order_code', 'total_price', 'shipping_fee', 'voucher_code', 'discount_amount', 'shipping_name', 'shipping_phone', 'shipping_address', 'shipping_lat', 'shipping_lng', 'delivery_method', 'notes', 'status', 'payment_method', 'payment_status', 'payment_transaction_id', 'payment_receipt'];
+    protected $fillable = ['user_id', 'order_code', 'total_price', 'shipping_fee', 'voucher_code', 'discount_amount', 'shipping_name', 'shipping_phone', 'shipping_address', 'shipping_lat', 'shipping_lng', 'delivery_method', 'notes', 'status', 'payment_method', 'payment_status', 'payment_transaction_id', 'payment_receipt', 'cancel_reason'];
 
     public function user() {
         return $this->belongsTo(User::class);

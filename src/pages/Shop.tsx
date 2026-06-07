@@ -16,7 +16,7 @@ export default function Shop() {
     queryFn: () => api.get(`/shop/products?category=${category}`).then((res) => res.data.data),
   });
 
-  const filteredProducts = Array.isArray(products) ? products.filter((p: any) => p.name.toLowerCase().includes(search.toLowerCase())) : [];
+  const filteredProducts = products?.filter((p: any) => p.name.toLowerCase().includes(search.toLowerCase())) || [];
 
   return (
     <main className="min-h-screen bg-background pt-24 pb-16">
@@ -46,9 +46,8 @@ export default function Shop() {
             <button
               key={cat}
               onClick={() => setCategory(cat)}
-              className={`px-5 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-all ${
-                category === cat ? "bg-primary text-white shadow-md" : "bg-card text-foreground border hover:border-primary/50"
-              }`}
+              className={`px-5 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-all ${category === cat ? "bg-primary text-white shadow-md" : "bg-card text-foreground border hover:border-primary/50"
+                }`}
             >
               {cat === "all" ? "Tất cả" : cat}
             </button>

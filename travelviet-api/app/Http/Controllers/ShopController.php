@@ -256,6 +256,10 @@ class ShopController extends Controller
 
     public function cancelOrder(Request $request, $id)
     {
+        $request->validate([
+            'cancel_reason' => 'required|string|max:255'
+        ]);
+
         $order = ShopOrder::where('user_id', $request->user()->id)->with('items.variant')->findOrFail($id);
         
         if ($order->status !== 'pending') {
@@ -263,6 +267,8 @@ class ShopController extends Controller
         }
 
         $order->status = 'cancelled';
+        $order->cancel_reason = $request->cancel_reason;
+        
         if ($order->payment_status === 'paid') {
             $order->payment_status = 'refunded';
         }
@@ -277,7 +283,7 @@ class ShopController extends Controller
         \App\Models\ShopOrderTracking::create([
             'shop_order_id' => $order->id,
             'title' => 'Đã hủy đơn hàng',
-            'description' => 'Khách hàng đã hủy đơn',
+            'description' => 'Lý do: ' . $request->cancel_reason,
             'location' => 'Hệ thống'
         ]);
 

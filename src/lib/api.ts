@@ -197,9 +197,8 @@ export const paymentAPIs = {
   deletePaymentMethod: (id: number) => api.delete(`/admin/payment-methods/${id}`),
 };
 
-// ============ Shop Order APIs (Customer) ============
 export const shopOrderAPIs = {
   pay: (id: number) => api.post(`/shop/orders/${id}/pay`),
-  cancel: (id: number) => api.delete(`/shop/orders/${id}/cancel`),
+  cancel: (id: number, cancel_reason: string) => api.delete(`/shop/orders/${id}/cancel`, { data: { cancel_reason } }),
   confirmReceived: (id: number) => api.post(`/shop/orders/${id}/confirm-received`),
 };
