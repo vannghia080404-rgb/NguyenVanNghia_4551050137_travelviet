@@ -132,7 +132,7 @@ const BookingPage = () => {
 
   const handleStep2Next = () => {
     const result = z.array(travelerSchema).safeParse(travelers);
-    
+
     if (!result.success) {
       const newErrors: Record<number, any> = {};
       result.error.issues.forEach(issue => {
@@ -149,7 +149,7 @@ const BookingPage = () => {
       });
       return;
     }
-    
+
     setTravelerErrors({});
     setStep(3);
   };
@@ -167,20 +167,19 @@ const BookingPage = () => {
       if (selectedHotel) {
         payload.hotel_id = selectedHotel.id;
       }
-      
+
       const res = await api.post("/bookings", payload);
       if (res.data.success) {
         toast({
           title: "Thành công",
           description: "Đặt tour thành công!",
         });
-        const selectedMethod = paymentMethods.find((m: any) => m.id.toString() === paymentMethod);
-        if (res.data.payment_url) {
-           window.location.href = res.data.payment_url;
-        } else if (selectedMethod && selectedMethod.type === 'transfer') {
-           navigate(`/payment/transfer/${res.data.data.booking_code}?amount=${total}&method=${selectedMethod.id}`);
+        if (paymentMethod === 'viettel_money') {
+          navigate(`/payment/transfer/${res.data.data.booking_code}?amount=${total}`);
+        } else if (res.data.payment_url) {
+          window.location.href = res.data.payment_url;
         } else {
-           navigate(`/payment-result?status=success&tour=${encodeURIComponent(tour.name)}&amount=${total}`);
+          navigate(`/payment-result?status=success&tour=${encodeURIComponent(tour.name)}&amount=${total}`);
         }
       }
     } catch (error: any) {
@@ -222,8 +221,8 @@ const BookingPage = () => {
               <div className={cn(
                 "h-10 w-10 rounded-full flex items-center justify-center font-bold text-sm shrink-0 transition-smooth",
                 step > s.id ? "bg-success text-white" :
-                step === s.id ? "bg-primary text-primary-foreground shadow-soft" :
-                "bg-secondary text-muted-foreground"
+                  step === s.id ? "bg-primary text-primary-foreground shadow-soft" :
+                    "bg-secondary text-muted-foreground"
               )}>
                 {step > s.id ? <Check className="h-5 w-5" /> : s.id}
               </div>

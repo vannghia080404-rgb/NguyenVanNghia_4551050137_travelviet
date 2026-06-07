@@ -1,4 +1,4 @@
-import { Calendar, Users, ChevronRight, AlertTriangle, User, FileText, Phone, ChevronLeft, CreditCard, Clock, MapPin, Shield } from "lucide-react";
+import { Calendar, Users, ChevronRight, AlertTriangle, User, FileText, Phone, ChevronLeft, CreditCard, Clock, MapPin, Shield, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
@@ -27,6 +27,7 @@ interface BookingMainContentProps {
   agreed: boolean;
   setAgreed: (agreed: boolean) => void;
   handleConfirm: () => void;
+  isSubmitting?: boolean;
 }
 
 const BookingMainContent = ({
@@ -51,6 +52,7 @@ const BookingMainContent = ({
   agreed,
   setAgreed,
   handleConfirm,
+  isSubmitting = false,
 }: BookingMainContentProps) => {
   return (
     <div>
@@ -295,11 +297,15 @@ const BookingMainContent = ({
           </label>
 
           <div className="flex gap-3">
-            <Button variant="outline" size="lg" className="flex-1" onClick={() => setStep(2)}>
+            <Button variant="outline" size="lg" className="flex-1" onClick={() => setStep(2)} disabled={isSubmitting}>
               <ChevronLeft className="h-4 w-4" /> Quay lại
             </Button>
-            <Button variant="hero" size="lg" className="flex-1" onClick={handleConfirm} disabled={!agreed}>
-              <Shield className="h-4 w-4" /> Xác nhận & Thanh toán
+            <Button variant="hero" size="lg" className="flex-1" onClick={handleConfirm} disabled={!agreed || isSubmitting}>
+              {isSubmitting ? (
+                <><Loader2 className="h-4 w-4 animate-spin" /> Đang xử lý...</>
+              ) : (
+                <><Shield className="h-4 w-4" /> Xác nhận & Thanh toán</>
+              )}
             </Button>
           </div>
         </div>
