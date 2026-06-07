@@ -183,7 +183,7 @@ const BookingPage = () => {
         } else if (pType === 'bank_transfer' || pType === 'e_wallet') {
           navigate(`/payment/transfer/${res.data.data.booking_code}?amount=${total}&method=${paymentMethod}`);
         } else {
-          navigate(`/payment-result?status=success&tour=${encodeURIComponent(tour.name)}&amount=${total}`);
+          navigate(`/payment-result?status=success&tour=${encodeURIComponent(tour.name)}&amount=${total}&methodName=${encodeURIComponent(selectedMethodObj?.name || 'Tiền mặt')}`);
         }
       }
     } catch (error: any) {

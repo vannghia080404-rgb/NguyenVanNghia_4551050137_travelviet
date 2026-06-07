@@ -10,6 +10,7 @@ const PaymentResult = () => {
   const status = params.get("status") || "success";
   const tourName = params.get("tour") || "Tour du lịch";
   const amount = Number(params.get("amount")) || 0;
+  const methodName = params.get("methodName") || "";
 
   const config = {
     success: {
@@ -74,10 +75,12 @@ const PaymentResult = () => {
                 {config.orderStatus}
               </span>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Phương thức</span>
-              <span className="font-medium text-foreground">VNPay</span>
-            </div>
+            {methodName && (
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Phương thức</span>
+                <span className="font-medium text-foreground">{methodName}</span>
+              </div>
+            )}
           </div>
 
           {/* Email notification */}
