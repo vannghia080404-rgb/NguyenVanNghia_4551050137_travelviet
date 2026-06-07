@@ -7,6 +7,17 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+
+// Fix leaflet default icon
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
 
 export default function ProfileShopOrders() {
   const queryClient = useQueryClient();
@@ -108,20 +119,30 @@ export default function ProfileShopOrders() {
                 </div>
 
                 <div className="bg-secondary/20 p-4 border-t border-border flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
-                  <div className="text-sm space-y-1 text-muted-foreground">
+                  <div className="text-sm space-y-1 text-muted-foreground flex-1">
                     <p className="flex items-center gap-2">
                       <Truck className="h-4 w-4" /> 
                       {order.delivery_method === 'office_pickup' ? 'Nhận tại văn phòng' : 'Giao hàng tận nơi'}
                     </p>
                     {order.delivery_method === 'home_delivery' && (
-                      <p className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4" /> 
-                        {order.shipping_address}
+                      <p className="flex items-start gap-2 mt-2">
+                        <MapPin className="h-4 w-4 shrink-0 mt-0.5" /> 
+                        <span>{order.shipping_address}</span>
                       </p>
+                    )}
+                    {order.shipping_lat && order.shipping_lng && (
+                      <div className="mt-3 h-32 w-full max-w-sm rounded-xl overflow-hidden border border-border/50 relative z-0">
+                        <MapContainer center={[order.shipping_lat, order.shipping_lng]} zoom={14} style={{ height: '100%', width: '100%' }} zoomControl={false} dragging={false}>
+                          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                          <Marker position={[order.shipping_lat, order.shipping_lng]}>
+                            <Popup>Vị trí nhận hàng</Popup>
+                          </Marker>
+                        </MapContainer>
+                      </div>
                     )}
                   </div>
 
-                  <div className="text-right w-full md:w-auto">
+                  <div className="text-right w-full md:w-auto mt-4 md:mt-0">
                     <div className="text-xs text-muted-foreground mb-1">
                       Tổng tiền hàng: {new Intl.NumberFormat("vi-VN").format(order.total_price)}đ <br/>
                       Giảm giá: -{new Intl.NumberFormat("vi-VN").format(order.discount_amount || 0)}đ <br/>

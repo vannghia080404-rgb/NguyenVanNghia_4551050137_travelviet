@@ -159,6 +159,8 @@ class ShopController extends Controller
             'shipping_name' => $request->shipping_name,
             'shipping_phone' => $request->shipping_phone,
             'shipping_address' => $request->shipping_address ?? '',
+            'shipping_lat' => $request->shipping_lat,
+            'shipping_lng' => $request->shipping_lng,
             'delivery_method' => $request->delivery_method,
             'notes' => $request->notes,
             'status' => 'pending',

@@ -8,6 +8,17 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+
+// Fix leaflet default icon
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
 
 export default function AdminShopOrders() {
   const queryClient = useQueryClient();
@@ -132,7 +143,7 @@ export default function AdminShopOrders() {
                             {/* Thông tin KH */}
                             <div className="bg-secondary/30 p-4 rounded-xl border border-border">
                               <h4 className="font-semibold text-sm mb-3 flex items-center gap-2 border-b border-border pb-2"><User className="h-4 w-4" /> Giao đến</h4>
-                              <div className="text-sm space-y-2 text-muted-foreground">
+                              <div className="text-sm space-y-2 text-muted-foreground flex-1">
                                 <p><strong className="text-foreground">Người nhận:</strong> {order.shipping_name}</p>
                                 <p><strong className="text-foreground">SĐT:</strong> {order.shipping_phone}</p>
                                 <p className="flex items-start gap-1">
@@ -140,6 +151,16 @@ export default function AdminShopOrders() {
                                   {order.shipping_address}
                                 </p>
                                 {order.notes && <p><strong className="text-foreground">Ghi chú:</strong> {order.notes}</p>}
+                                {order.shipping_lat && order.shipping_lng && (
+                                  <div className="mt-3 h-32 w-full rounded-xl overflow-hidden border border-border/50 relative z-0">
+                                    <MapContainer center={[order.shipping_lat, order.shipping_lng]} zoom={14} style={{ height: '100%', width: '100%' }} zoomControl={false} dragging={false}>
+                                      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                                      <Marker position={[order.shipping_lat, order.shipping_lng]}>
+                                        <Popup>Vị trí khách chọn</Popup>
+                                      </Marker>
+                                    </MapContainer>
+                                  </div>
+                                )}
                               </div>
                             </div>
 

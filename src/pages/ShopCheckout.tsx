@@ -1,7 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
-import { ShieldCheck, ArrowLeft, CreditCard, Banknote, Loader2 } from "lucide-react";
+import { ShieldCheck, ArrowLeft, CreditCard, Banknote, Loader2, MapPin } from "lucide-react";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,28 @@ import { toast } from "sonner";
 import { useAuthStore } from "@/store/useAuthStore";
 import { getImageUrl } from "@/lib/utils";
 import { useSettingsStore } from "@/store/useSettingsStore";
+import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+
+// Fix leaflet default icon
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+function LocationMarker({ position, setPosition }: { position: any, setPosition: any }) {
+  useMapEvents({
+    click(e) {
+      setPosition(e.latlng);
+    },
+  });
+  return position === null ? null : (
+    <Marker position={position}></Marker>
+  );
+}
 
 export default function ShopCheckout() {
   const { user } = useAuthStore();
@@ -20,10 +42,19 @@ export default function ShopCheckout() {
     shipping_name: user?.name || "",
     shipping_phone: user?.phone || "",
     shipping_address: "",
+    shipping_lat: null as number | null,
+    shipping_lng: null as number | null,
     notes: "",
     delivery_method: "home_delivery",
     payment_method: "cash",
   });
+  const [mapPosition, setMapPosition] = useState<any>(null);
+
+  useEffect(() => {
+    if (mapPosition) {
+      setForm(f => ({ ...f, shipping_lat: mapPosition.lat, shipping_lng: mapPosition.lng }));
+    }
+  }, [mapPosition]);
 
   const [voucherCode, setVoucherCode] = useState("");
   const [appliedVoucher, setAppliedVoucher] = useState<any>(null);
@@ -144,9 +175,21 @@ export default function ShopCheckout() {
                   <Input className="mt-1.5" value={form.shipping_phone} onChange={e => setForm({...form, shipping_phone: e.target.value})} placeholder="0901234567" />
                 </div>
                 {form.delivery_method === 'home_delivery' && (
-                  <div>
-                    <label className="text-sm font-semibold text-foreground/80">Địa chỉ giao hàng (Cụ thể) *</label>
-                    <textarea className="w-full mt-1.5 p-3 border border-border bg-background rounded-xl text-sm resize-none" rows={3} value={form.shipping_address} onChange={e => setForm({...form, shipping_address: e.target.value})} placeholder="Số nhà, Tên đường, Phường/Xã, Quận/Huyện, Tỉnh/TP" />
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-semibold text-foreground/80">Địa chỉ giao hàng (Cụ thể) *</label>
+                      <textarea className="w-full mt-1.5 p-3 border border-border bg-background rounded-xl text-sm resize-none" rows={3} value={form.shipping_address} onChange={e => setForm({...form, shipping_address: e.target.value})} placeholder="Số nhà, Tên đường, Phường/Xã, Quận/Huyện, Tỉnh/TP" />
+                    </div>
+                    <div>
+                      <label className="text-sm font-semibold text-foreground/80 mb-2 block flex items-center gap-2"><MapPin className="h-4 w-4"/> Chọn vị trí trên bản đồ</label>
+                      <div className="h-64 rounded-xl overflow-hidden border border-border relative z-0">
+                        <MapContainer center={[13.782967, 109.223847]} zoom={13} style={{ height: '100%', width: '100%' }}>
+                          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                          <LocationMarker position={mapPosition} setPosition={setMapPosition} />
+                        </MapContainer>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2 italic">Bấm vào bản đồ để ghim vị trí chính xác giúp shipper giao hàng nhanh hơn.</p>
+                    </div>
                   </div>
                 )}
                 <div>
