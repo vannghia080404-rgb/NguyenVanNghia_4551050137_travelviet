@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { Package, Search, ShoppingBag } from "lucide-react";
+import { Package, Search, SlidersHorizontal, ChevronRight, Star, ShoppingBag } from "lucide-react";
+import { getImageUrl } from "@/lib/utils";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -67,7 +68,7 @@ export default function Shop() {
               <Link key={p.id} to={`/shop/${p.slug}`} className="group bg-card rounded-2xl overflow-hidden shadow-soft hover:shadow-card transition-all border border-border/50 flex flex-col">
                 <div className="aspect-square bg-secondary/50 relative overflow-hidden">
                   {p.image_url ? (
-                    <img src={`${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8000'}${p.image_url}`} alt={p.name} className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <img src={getImageUrl(p.image_url)} alt={p.name} className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   ) : (
                     <Package className="h-12 w-12 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-20" />
                   )}

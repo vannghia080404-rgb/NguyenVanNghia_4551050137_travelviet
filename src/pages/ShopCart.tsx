@@ -4,6 +4,7 @@ import { Trash2, ShoppingBag, ArrowRight } from "lucide-react";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { getImageUrl } from "@/lib/utils";
 import { useAuthStore } from "@/store/useAuthStore";
 
 export default function Cart() {
@@ -67,7 +68,7 @@ export default function Cart() {
                   <div key={item.id} className="bg-card border border-border/50 rounded-2xl p-4 flex gap-4 items-center shadow-sm">
                     <div className="h-24 w-24 rounded-xl overflow-hidden bg-secondary shrink-0 border border-border/50">
                       {p.image_url ? (
-                        <img src={`${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8000'}${p.image_url}`} alt={p.name} className="h-full w-full object-cover" />
+                        <img src={getImageUrl(p.image_url)} alt={p.name} className="h-full w-full object-cover" />
                       ) : null}
                     </div>
                     <div className="flex-1 min-w-0">

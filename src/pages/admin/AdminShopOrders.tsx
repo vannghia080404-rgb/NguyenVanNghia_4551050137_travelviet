@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Package, Truck, CheckCircle2, XCircle, Clock, MapPin, User, Search } from "lucide-react";
+import { getImageUrl } from "@/lib/utils";
 import AdminLayout from "@/components/admin/AdminLayout";
 import api from "@/lib/api";
 import { toast } from "sonner";
@@ -142,8 +143,8 @@ export default function AdminShopOrders() {
                             <div className="p-4 max-h-60 overflow-y-auto space-y-3">
                               {order.items?.map((item: any) => (
                                 <div key={item.id} className="flex gap-3 items-center">
-                                  <div className="h-12 w-12 rounded-lg bg-secondary overflow-hidden shrink-0">
-                                    {item.variant?.product?.image_url && <img src={`${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8000'}${item.variant.product.image_url}`} alt="sp" className="h-full w-full object-cover" />}
+                                  <div className="h-12 w-12 bg-secondary/50 rounded-lg overflow-hidden border border-border/50 shrink-0">
+                                    {item.variant?.product?.image_url && <img src={getImageUrl(item.variant.product.image_url)} alt="sp" className="h-full w-full object-cover" />}
                                   </div>
                                   <div className="flex-1 min-w-0">
                                     <p className="text-sm font-medium line-clamp-1">{item.variant?.product?.name}</p>

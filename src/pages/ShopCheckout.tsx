@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/useAuthStore";
+import { getImageUrl } from "@/lib/utils";
 
 export default function ShopCheckout() {
   const { user } = useAuthStore();
@@ -123,8 +124,8 @@ export default function ShopCheckout() {
                   const unitPrice = parseFloat(p.base_price) + parseFloat(v.price_modifier);
                   return (
                     <div key={item.id} className="flex gap-3 items-center">
-                      <div className="h-12 w-12 rounded-lg overflow-hidden bg-secondary shrink-0 border border-border/50">
-                        {p.image_url && <img src={`${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8000'}${p.image_url}`} alt={p.name} className="h-full w-full object-cover" />}
+                      <div className="h-16 w-16 bg-secondary/50 rounded-xl border border-border/50 overflow-hidden shrink-0 flex items-center justify-center">
+                        {p.image_url && <img src={getImageUrl(p.image_url)} alt={p.name} className="h-full w-full object-cover" />}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-medium line-clamp-1">{p.name}</div>

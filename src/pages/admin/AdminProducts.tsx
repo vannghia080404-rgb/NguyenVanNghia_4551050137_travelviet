@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import AdminLayout from "@/components/admin/AdminLayout";
 import api from "@/lib/api";
 import { toast } from "sonner";
+import { getImageUrl } from "@/lib/utils";
 
 type ProductVariant = {
   id?: number;
@@ -114,7 +115,7 @@ export default function AdminProducts() {
     setEditingId(p.id);
     setForm({ name: p.name, category: p.category, base_price: p.base_price, description: p.description || "" });
     setVariants(p.variants || []);
-    setImagePreview(p.image_url ? `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8000'}${p.image_url}` : null);
+    setImagePreview(p.image_url ? getImageUrl(p.image_url) : null);
     setExistingGallery(p.images || []);
     setGalleryFiles([]);
     setDeletedImages([]);
@@ -207,7 +208,7 @@ export default function AdminProducts() {
               <div className="flex flex-wrap gap-2 mt-2">
                 {existingGallery.map(img => (
                   <div key={img.id} className="relative h-16 w-16 rounded-xl overflow-hidden border border-border">
-                    <img src={`${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8000'}${img.image_url}`} className="h-full w-full object-cover" alt="gallery" />
+                    <img src={getImageUrl(img.image_url)} className="h-full w-full object-cover" alt="gallery" />
                     <button type="button" onClick={() => removeExistingGallery(img.id)} className="absolute top-0 right-0 bg-red-500/80 text-white p-0.5 rounded-bl-lg hover:bg-red-500"><X className="h-3 w-3" /></button>
                   </div>
                 ))}
@@ -260,7 +261,7 @@ export default function AdminProducts() {
                   <div key={i} className="flex gap-2 mb-2 items-center bg-secondary/30 p-2 rounded-lg border border-border/50">
                     <label className="h-8 w-8 rounded-md border border-border bg-background overflow-hidden flex items-center justify-center cursor-pointer shrink-0 hover:border-primary">
                       {v.image_url ? (
-                        <img src={v.image_url.startsWith('blob:') ? v.image_url : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8000'}${v.image_url}`} alt="var" className="h-full w-full object-cover" />
+                        <img src={v.image_url.startsWith('blob:') ? v.image_url : getImageUrl(v.image_url)} alt="var" className="h-full w-full object-cover" />
                       ) : (
                         <ImagePlus className="h-4 w-4 text-muted-foreground/50" />
                       )}
@@ -319,7 +320,7 @@ export default function AdminProducts() {
                   <div key={product.id} className="p-4 flex gap-4 hover:bg-secondary/40 transition-colors">
                     <div className="h-20 w-20 rounded-xl overflow-hidden bg-background shrink-0 border border-border/50 flex items-center justify-center">
                       {product.image_url ? (
-                        <img src={`${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8000'}${product.image_url}`} alt={product.name} className="h-full w-full object-cover" />
+                        <img src={getImageUrl(product.image_url)} alt={product.name} className="h-full w-full object-cover" />
                       ) : (
                         <ImagePlus className="h-6 w-6 text-muted-foreground/30" />
                       )}
@@ -337,7 +338,7 @@ export default function AdminProducts() {
                         {product.variants?.map((v, idx) => (
                           <div key={idx} className="text-xs bg-background border border-border rounded-md px-2 py-1 flex items-center gap-1.5">
                             {v.image_url && (
-                              <img src={`${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8000'}${v.image_url}`} alt="variant" className="h-4 w-4 rounded-full object-cover" />
+                              <img src={getImageUrl(v.image_url)} alt="variant" className="h-4 w-4 rounded-full object-cover" />
                             )}
                             <span className="font-medium text-foreground">{v.size}</span>
                             <span className="text-muted-foreground">({v.color})</span>

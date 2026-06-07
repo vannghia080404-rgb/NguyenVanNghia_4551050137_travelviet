@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { Package, Search, ExternalLink } from "lucide-react";
+import { Package, Clock, Truck, CheckCircle2, XCircle, Eye, Search, ExternalLink } from "lucide-react";
+import { getImageUrl } from "@/lib/utils";
 import ProfileLayout from "@/components/layout/ProfileLayout";
 import api from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
@@ -57,8 +58,8 @@ export default function ProfileShopOrders() {
                 <div className="p-4 bg-card space-y-4">
                   {order.items?.map((item: any) => (
                     <div key={item.id} className="flex items-center gap-4 border-b border-border/50 pb-4 last:border-0 last:pb-0">
-                      <div className="h-16 w-16 bg-secondary rounded-lg overflow-hidden shrink-0">
-                        {item.variant?.product?.image_url && <img src={`${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8000'}${item.variant.product.image_url}`} alt={item.variant.product.name} className="h-full w-full object-cover" />}
+                      <div className="h-16 w-16 bg-secondary/30 rounded-xl overflow-hidden shrink-0 border border-border/50 flex items-center justify-center">
+                        {item.variant?.product?.image_url && <img src={getImageUrl(item.variant.product.image_url)} alt={item.variant.product.name} className="h-full w-full object-cover" />}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="font-medium text-sm line-clamp-1">{item.variant?.product?.name || 'Sản phẩm đã bị xóa'}</div>

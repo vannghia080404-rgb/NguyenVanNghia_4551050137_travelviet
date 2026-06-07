@@ -6,6 +6,7 @@ import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/useAuthStore";
+import { getImageUrl } from "@/lib/utils";
 
 export default function ShopProductDetail() {
   const { slug } = useParams();
@@ -76,7 +77,7 @@ export default function ShopProductDetail() {
             <div className="bg-card rounded-3xl overflow-hidden border border-border/50 aspect-[4/5] md:aspect-square relative flex items-center justify-center">
               {currentDisplayImage ? (
                 <img 
-                  src={`${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8000'}${currentDisplayImage}`} 
+                  src={getImageUrl(currentDisplayImage)} 
                   alt={product.name} 
                   className="w-full h-full object-cover transition-opacity duration-300" 
                 />
@@ -92,7 +93,7 @@ export default function ShopProductDetail() {
                   onClick={() => setActiveImage(product.image_url)}
                   className={`h-20 w-20 shrink-0 rounded-xl overflow-hidden border-2 transition-all ${currentDisplayImage === product.image_url ? 'border-primary' : 'border-transparent hover:border-primary/50'}`}
                 >
-                  <img src={`${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8000'}${product.image_url}`} alt="main" className="h-full w-full object-cover" />
+                  <img src={getImageUrl(product.image_url)} alt="main" className="h-full w-full object-cover" />
                 </button>
               )}
               {product.images?.map((img: any) => (
@@ -101,7 +102,7 @@ export default function ShopProductDetail() {
                   onClick={() => setActiveImage(img.image_url)}
                   className={`h-20 w-20 shrink-0 rounded-xl overflow-hidden border-2 transition-all ${currentDisplayImage === img.image_url ? 'border-primary' : 'border-transparent hover:border-primary/50'}`}
                 >
-                  <img src={`${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8000'}${img.image_url}`} alt="gallery" className="h-full w-full object-cover" />
+                  <img src={getImageUrl(img.image_url)} alt="gallery" className="h-full w-full object-cover" />
                 </button>
               ))}
             </div>
@@ -148,7 +149,7 @@ export default function ShopProductDetail() {
                         <div className="flex items-center gap-2">
                           {v.image_url && (
                             <img 
-                              src={`${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8000'}${v.image_url}`} 
+                              src={getImageUrl(v.image_url)} 
                               alt="var" 
                               className="h-6 w-6 rounded-md object-cover border border-border shrink-0"
                             />
