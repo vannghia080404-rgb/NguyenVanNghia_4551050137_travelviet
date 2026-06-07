@@ -32,6 +32,13 @@ export default function AdminBroadcast() {
     target_user_id: "",
     target_role: "user",
   });
+  const [searchUser, setSearchUser] = useState("");
+
+  const { data: usersData } = useQuery({
+    queryKey: ["admin-users-search", searchUser],
+    queryFn: () => api.get(`/admin/users?search=${searchUser}&per_page=50`).then(r => r.data.data?.data || []),
+  });
+  const usersList = usersData || [];
 
   const { data: history, isLoading } = useQuery({
     queryKey: ["broadcast-history"],
@@ -114,14 +121,25 @@ export default function AdminBroadcast() {
             {/* Conditional target */}
             {form.broadcast_type === "individual" && (
               <div className="mb-5">
-                <label className="text-sm font-semibold text-foreground/80">ID Người dùng</label>
-                <Input
-                  className="mt-1.5 h-11 bg-background text-foreground border-border"
-                  type="number"
-                  placeholder="Nhập ID người dùng..."
-                  value={form.target_user_id}
-                  onChange={(e) => setForm(f => ({ ...f, target_user_id: e.target.value }))}
-                />
+                <label className="text-sm font-semibold text-foreground/80">Chọn người dùng</label>
+                <div className="flex gap-2 mt-1.5">
+                  <Input
+                    className="h-11 bg-background text-foreground border-border w-1/3"
+                    placeholder="Tìm tên/email..."
+                    value={searchUser}
+                    onChange={(e) => setSearchUser(e.target.value)}
+                  />
+                  <select
+                    className="flex-1 h-11 px-3 border border-border rounded-xl text-sm bg-background text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
+                    value={form.target_user_id}
+                    onChange={(e) => setForm(f => ({ ...f, target_user_id: e.target.value }))}
+                  >
+                    <option value="">-- Chọn người nhận --</option>
+                    {usersList?.map((u: any) => (
+                      <option key={u.id} value={u.id}>{u.name} ({u.email}) - ID: {u.id}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
             )}
             {form.broadcast_type === "role" && (
