@@ -196,22 +196,24 @@ const ProfileOrders = () => {
                           {paymentConfig[order.payment_status]?.label}
                         </span>
                         <span className="text-xs font-medium text-foreground border-l border-border pl-2">
-                          {order.payment_method === 'cash' ? 'Tiền mặt' : 
+                          {order.paymentMethod ? order.paymentMethod.name : (
+                           order.payment_method === 'cash' ? 'Tiền mặt' : 
                            order.payment_method === 'vnpay' ? 'VNPay' :
                            order.payment_method === 'viettel_money' ? 'Viettel Money' : 
-                           order.payment_method === 'bank_transfer' ? 'Chuyển khoản' : 'Khác'}
+                           order.payment_method === 'bank_transfer' ? 'Chuyển khoản' : order.payment_method
+                          )}
                         </span>
                       </div>
                     </div>
 
                     <div className="mt-auto pt-4 flex items-center justify-end gap-3 border-t border-border mt-5">
-                      {order.status === 'pending' && order.payment_status === 'pending' && order.payment_method !== 'cash' && (
+                      {order.status === 'pending' && order.payment_status === 'pending' && order.paymentMethod?.type !== 'cash' && order.payment_method !== 'cash' && (
                         order.payment_receipt ? (
                           <Button 
                             variant="default" 
                             size="sm" 
                             className="bg-success hover:bg-success/90 text-white"
-                            onClick={() => navigate(`/payment/transfer/${order.booking_code}?amount=${order.total_price}`)}
+                            onClick={() => navigate(`/payment/transfer/${order.booking_code}?amount=${order.total_price}&method=${order.paymentMethod?.id || ''}`)}
                           >
                             <CheckCircle className="h-4 w-4 mr-1.5" />
                             Đã tải lên Bill
@@ -222,10 +224,10 @@ const ProfileOrders = () => {
                             size="sm" 
                             className="bg-primary hover:bg-primary/90 text-primary-foreground"
                             onClick={() => {
-                              if (order.payment_method === 'vnpay') {
+                              if (order.paymentMethod?.type === 'vnpay' || order.payment_method === 'vnpay') {
                                 handleRepay(order.booking_code);
                               } else {
-                                navigate(`/payment/transfer/${order.booking_code}?amount=${order.total_price}`);
+                                navigate(`/payment/transfer/${order.booking_code}?amount=${order.total_price}&method=${order.paymentMethod?.id || ''}`);
                               }
                             }}
                             disabled={isRepaying === order.booking_code}
@@ -315,9 +317,11 @@ const ProfileOrders = () => {
                               <div>
                                 <span className="text-sm text-muted-foreground">Phương thức:</span>
                                 <span className="ml-2 font-medium text-foreground">
-                                  {order.payment_method === 'viettel_money' ? 'Viettel Money' : 
+                                  {order.paymentMethod ? order.paymentMethod.name : (
+                                   order.payment_method === 'viettel_money' ? 'Viettel Money' : 
                                    order.payment_method === 'bank_transfer' ? 'Chuyển khoản ngân hàng' : 
-                                   order.payment_method === 'momo' ? 'Ví MoMo' : order.payment_method}
+                                   order.payment_method === 'momo' ? 'Ví MoMo' : order.payment_method
+                                  )}
                                 </span>
                               </div>
                               <div>
@@ -330,7 +334,7 @@ const ProfileOrders = () => {
                                 <Button 
                                   variant="outline" 
                                   size="sm"
-                                  onClick={() => navigate(`/payment/transfer/${order.booking_code}?amount=${order.total_price}`)}
+                                  onClick={() => navigate(`/payment/transfer/${order.booking_code}?amount=${order.total_price}&method=${order.paymentMethod?.id || ''}`)}
                                 >
                                   {order.payment_receipt ? "Xem/Cập nhật hóa đơn chuyển khoản" : "Tải lên hóa đơn chuyển khoản"}
                                 </Button>

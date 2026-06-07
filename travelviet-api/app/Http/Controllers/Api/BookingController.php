@@ -95,7 +95,8 @@ class BookingController extends Controller
             }
 
             $paymentUrl = null;
-            if ($request->payment_method === 'vnpay') {
+            $paymentMethod = \App\Models\PaymentMethod::find($request->payment_method);
+            if ($paymentMethod && $paymentMethod->type === 'vnpay') {
                 $vnpayService = new \App\Services\VNPayService();
                 $paymentUrl = $vnpayService->createPaymentUrl([
                     'order_id' => $booking->booking_code,
@@ -154,7 +155,9 @@ class BookingController extends Controller
         }
 
         $paymentUrl = null;
-        if ($booking->payment_method === 'vnpay') {
+        $paymentMethod = \App\Models\PaymentMethod::find($booking->payment_method);
+        
+        if ($paymentMethod && $paymentMethod->type === 'vnpay') {
             $vnpayService = new \App\Services\VNPayService();
             // Append time to order_id to avoid VNPay duplicate txn error
             $uniqueOrderId = $booking->booking_code . '_' . time();
@@ -177,7 +180,7 @@ class BookingController extends Controller
 
     public function myBookings(Request $request)
     {
-        $query = Booking::with(['tour.destination', 'travelers']) // Eager load destination and travelers
+        $query = Booking::with(['tour.destination', 'travelers', 'paymentMethod']) // Eager load destination and travelers
             ->where('user_id', $request->user()->id)
             ->orderBy('created_at', 'desc');
 

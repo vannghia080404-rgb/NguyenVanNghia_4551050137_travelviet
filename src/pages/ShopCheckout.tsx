@@ -96,7 +96,15 @@ export default function ShopCheckout() {
     onSuccess: (res) => {
       toast.success("Đặt hàng thành công!");
       queryClient.invalidateQueries({ queryKey: ["cart"] });
-      navigate("/profile/shop-orders");
+      
+      const selectedMethod = paymentMethods.find((m: any) => m.id.toString() === form.payment_method);
+      if (res.data.payment_url) {
+        window.location.href = res.data.payment_url;
+      } else if (selectedMethod && selectedMethod.type === 'transfer') {
+        navigate(`/payment/transfer/${res.data.order.order_code}?amount=${totalPayment}&method=${selectedMethod.id}`);
+      } else {
+        navigate("/profile/shop-orders");
+      }
     },
     onError: () => {
       toast.error("Vui lòng điền đầy đủ thông tin giao hàng!");

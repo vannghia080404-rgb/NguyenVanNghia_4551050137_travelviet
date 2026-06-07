@@ -182,9 +182,24 @@ class ShopController extends Controller
 
         CartItem::where('user_id', $request->user()->id)->delete();
 
-        // If VNPay, we could generate payment URL here, but for simplicity we return success and handle payment separately or treat it like COD.
-        // To be fully identical to tours, we'd integrate the actual VNPay callback logic, but let's just create the order for now.
-        return response()->json(['success' => true, 'order' => $order]);
+        $paymentUrl = null;
+        $paymentMethod = \App\Models\PaymentMethod::find($request->payment_method);
+        
+        if ($paymentMethod && $paymentMethod->type === 'vnpay') {
+            $vnpayService = new \App\Services\VNPayService();
+            $paymentUrl = $vnpayService->createPaymentUrl([
+                'order_id' => $order->order_code,
+                'order_desc' => "Thanh toan don hang Shop " . $order->order_code,
+                'amount' => $totalPrice - $discountAmount + $shippingFee,
+                'return_url' => env('VNP_RETURN_URL'),
+            ]);
+        }
+
+        return response()->json([
+            'success' => true, 
+            'order' => $order,
+            'payment_url' => $paymentUrl
+        ]);
     }
 
     public function getOrders(Request $request)

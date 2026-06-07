@@ -18,20 +18,36 @@ const PaymentTransfer = () => {
   const [file, setFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
+  const methodId = searchParams.get("method");
+  const isShopOrder = bookingId?.startsWith("SHOP");
+
   const { data: bookingsResponse } = useQuery({
-    queryKey: ['my-bookings'],
+    queryKey: [isShopOrder ? 'shop-orders' : 'my-bookings'],
     queryFn: async () => {
-      const res = await api.get('/bookings');
+      const endpoint = isShopOrder ? '/shop/orders' : '/bookings';
+      const res = await api.get(endpoint);
       return res.data;
     }
   });
 
-  const booking = bookingsResponse?.data?.find((b: any) => b.booking_code === bookingId);
+  const { data: paymentMethodsResponse } = useQuery({
+    queryKey: ['payment-methods'],
+    queryFn: () => api.get('/payment-methods').then(res => res.data.data),
+  });
+
+  const booking = bookingsResponse?.data?.find((b: any) => (isShopOrder ? b.order_code : b.booking_code) === bookingId);
   const existingReceiptUrl = booking?.payment_receipt ? (booking.payment_receipt.startsWith('http') ? booking.payment_receipt : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8000'}${booking.payment_receipt}`) : null;
 
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  const accountInfo = {
+  const selectedPaymentMethod = paymentMethodsResponse?.find((m: any) => m.id.toString() === methodId) || booking?.paymentMethod;
+
+  const accountInfo = selectedPaymentMethod ? {
+    bank: selectedPaymentMethod.bank_name || "ViettelPay (MB Bank)",
+    name: selectedPaymentMethod.account_name || "NGUYỄN VĂN NGHĨA",
+    number: selectedPaymentMethod.account_number || "9704 2292 0577 1969 654",
+    content: `Thanh toan don ${bookingId}`,
+  } : {
     bank: "ViettelPay (MB Bank)",
     name: "NGUYỄN VĂN NGHĨA",
     number: "9704 2292 0577 1969 654",
@@ -67,13 +83,15 @@ const PaymentTransfer = () => {
       const formData = new FormData();
       formData.append("receipt", file);
 
-      const res = await api.post(`/bookings/${bookingId}/receipt`, formData, {
+      const endpoint = isShopOrder ? `/shop/orders/${booking?.id}/receipt` : `/bookings/${bookingId}/receipt`;
+      
+      const res = await api.post(endpoint, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
       if (res.data.success) {
         toast({ title: "Thành công", description: "Đã gửi hóa đơn thanh toán. Chúng tôi sẽ kiểm tra và xác nhận sớm nhất!" });
-        navigate("/profile/orders");
+        navigate(isShopOrder ? "/profile/shop-orders" : "/profile/orders");
       }
     } catch (error: any) {
       toast({ variant: "destructive", title: "Lỗi", description: error.response?.data?.message || "Không thể gửi hóa đơn." });
@@ -90,9 +108,9 @@ const PaymentTransfer = () => {
         </Button>
 
         <div className="bg-card rounded-2xl shadow-soft overflow-hidden">
-          <div className="bg-red-600 p-6 text-white text-center">
-            <h1 className="font-display text-2xl font-bold">Thanh Toán Viettel Money</h1>
-            <p className="text-white/80 mt-1">Quét mã QR hoặc chuyển khoản thủ công</p>
+          <div className="bg-primary p-6 text-primary-foreground text-center">
+            <h1 className="font-display text-2xl font-bold">Thanh Toán {selectedPaymentMethod?.name || "Chuyển Khoản"}</h1>
+            <p className="text-primary-foreground/80 mt-1">Quét mã QR hoặc chuyển khoản thủ công</p>
           </div>
 
           <div className="p-6 md:p-8 space-y-8">
@@ -100,10 +118,13 @@ const PaymentTransfer = () => {
               {/* QR Code */}
               <div className="w-48 shrink-0">
                 <div className="aspect-square bg-white rounded-xl border border-border flex items-center justify-center p-3 relative overflow-hidden shadow-sm">
-                   {/* In a real app, generate the VietQR image url here dynamically */}
-                   <img src={`https://img.vietqr.io/image/MB-9704229205771969654-compact2.png?amount=${amount}&addInfo=${accountInfo.content}&accountName=${accountInfo.name}`} alt="QR Code" className="w-full h-full object-contain" />
+                   {selectedPaymentMethod?.qr_code_url ? (
+                     <img src={selectedPaymentMethod.qr_code_url.startsWith('http') ? selectedPaymentMethod.qr_code_url : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8000'}${selectedPaymentMethod.qr_code_url}`} alt="QR Code" className="w-full h-full object-contain" />
+                   ) : (
+                     <img src={`https://img.vietqr.io/image/MB-9704229205771969654-compact2.png?amount=${amount}&addInfo=${accountInfo.content}&accountName=${accountInfo.name}`} alt="QR Code" className="w-full h-full object-contain" />
+                   )}
                 </div>
-                <p className="text-center text-xs text-muted-foreground mt-2 font-medium">Mở App Ngân hàng hoặc Viettel Money để quét mã</p>
+                <p className="text-center text-xs text-muted-foreground mt-2 font-medium">Mở App Ngân hàng hoặc Ví để quét mã</p>
               </div>
 
               {/* Transfer Info */}

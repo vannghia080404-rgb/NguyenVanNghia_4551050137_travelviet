@@ -43,6 +43,8 @@ const BookingPage = () => {
     }
   });
 
+
+
   const tour = response?.data;
 
   const [searchParams] = useSearchParams();
@@ -172,10 +174,11 @@ const BookingPage = () => {
           title: "Thành công",
           description: "Đặt tour thành công!",
         });
-        if (paymentMethod === 'viettel_money') {
-           navigate(`/payment/transfer/${res.data.data.booking_code}?amount=${total}`);
-        } else if (res.data.payment_url) {
+        const selectedMethod = paymentMethods.find((m: any) => m.id.toString() === paymentMethod);
+        if (res.data.payment_url) {
            window.location.href = res.data.payment_url;
+        } else if (selectedMethod && selectedMethod.type === 'transfer') {
+           navigate(`/payment/transfer/${res.data.data.booking_code}?amount=${total}&method=${selectedMethod.id}`);
         } else {
            navigate(`/payment-result?status=success&tour=${encodeURIComponent(tour.name)}&amount=${total}`);
         }
