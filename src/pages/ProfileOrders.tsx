@@ -196,12 +196,12 @@ const ProfileOrders = () => {
                           {paymentConfig[order.payment_status]?.label}
                         </span>
                         <span className="text-xs font-medium text-foreground border-l border-border pl-2">
-                          {order.paymentMethod ? order.paymentMethod.name : (
+                          {order.paymentMethod?.name || (typeof order.payment_method === 'object' ? order.payment_method?.name : (
                            order.payment_method === 'cash' ? 'Tiền mặt' : 
                            order.payment_method === 'vnpay' ? 'VNPay' :
                            order.payment_method === 'viettel_money' ? 'Viettel Money' : 
                            order.payment_method === 'bank_transfer' ? 'Chuyển khoản' : order.payment_method
-                          )}
+                          ))}
                         </span>
                       </div>
                     </div>
@@ -317,11 +317,11 @@ const ProfileOrders = () => {
                               <div>
                                 <span className="text-sm text-muted-foreground">Phương thức:</span>
                                 <span className="ml-2 font-medium text-foreground">
-                                  {order.paymentMethod ? order.paymentMethod.name : (
+                                  {order.paymentMethod?.name || (typeof order.payment_method === 'object' ? order.payment_method?.name : (
                                    order.payment_method === 'viettel_money' ? 'Viettel Money' : 
                                    order.payment_method === 'bank_transfer' ? 'Chuyển khoản ngân hàng' : 
                                    order.payment_method === 'momo' ? 'Ví MoMo' : order.payment_method
-                                  )}
+                                  ))}
                                 </span>
                               </div>
                               <div>
