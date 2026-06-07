@@ -257,7 +257,7 @@ const BookingMainContent = ({
               {paymentMethods.length > 0 ? (
                 paymentMethods.map((method) => (
                   <label key={method.id} className="flex items-center gap-3 p-4 rounded-xl border-2 border-border cursor-pointer hover:border-primary/40 transition-smooth"
-                         style={paymentMethod === method.id.toString() ? { borderColor: 'var(--primary)', backgroundColor: 'var(--primary-foreground)' } : {}}>
+                         style={paymentMethod === method.id.toString() ? { borderColor: 'hsl(var(--primary))', backgroundColor: 'hsl(var(--primary) / 0.05)' } : {}}>
                     <input 
                       type="radio" 
                       name="payment" 
@@ -297,10 +297,10 @@ const BookingMainContent = ({
           </label>
 
           <div className="flex gap-3">
-            <Button variant="outline" size="lg" className="flex-1" onClick={() => setStep(2)} disabled={isSubmitting}>
+            <Button variant="outline" size="lg" className="flex-1 active:scale-95 transition-transform" onClick={() => setStep(2)} disabled={isSubmitting}>
               <ChevronLeft className="h-4 w-4" /> Quay lại
             </Button>
-            <Button variant="hero" size="lg" className="flex-1" onClick={handleConfirm} disabled={!agreed || isSubmitting}>
+            <Button variant="hero" size="lg" className="flex-1 active:scale-95 transition-transform shadow-[0_8px_20px_rgba(251,191,36,0.3)]" onClick={handleConfirm} disabled={!agreed || isSubmitting}>
               {isSubmitting ? (
                 <><Loader2 className="h-4 w-4 animate-spin" /> Đang xử lý...</>
               ) : (
