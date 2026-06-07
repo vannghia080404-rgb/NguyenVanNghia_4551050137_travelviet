@@ -12,7 +12,7 @@ const PaymentResult = () => {
   const amount = Number(params.get("amount")) || 0;
   const methodName = params.get("methodName") || "";
 
-  const config = {
+  const configOptions: Record<string, any> = {
     success: {
       icon: CheckCircle2,
       iconClass: "bg-success/15 text-success",
@@ -37,7 +37,9 @@ const PaymentResult = () => {
       orderStatus: "Thanh toán lỗi",
       orderStatusClass: "bg-destructive/15 text-destructive",
     },
-  }[status] || config.success;
+  };
+
+  const config = configOptions[status] || configOptions.success;
 
   const Icon = config.icon;
 
