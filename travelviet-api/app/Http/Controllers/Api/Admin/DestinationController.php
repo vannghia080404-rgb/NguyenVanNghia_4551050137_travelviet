@@ -24,7 +24,7 @@ class DestinationController extends Controller
             'description' => 'nullable|string',
             'color' => 'nullable|string|max:255',
             'region' => 'nullable|in:north,central,south',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
         ]);
 
         $data = $request->only(['name', 'title', 'description', 'color', 'region']);
@@ -60,7 +60,7 @@ class DestinationController extends Controller
             'description' => 'nullable|string',
             'color' => 'nullable|string|max:255',
             'region' => 'nullable|in:north,central,south',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
         ]);
 
         $data = $request->only(['name', 'title', 'description', 'color', 'region']);

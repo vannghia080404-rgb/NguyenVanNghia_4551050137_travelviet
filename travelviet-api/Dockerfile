@@ -7,5 +7,6 @@ COPY . .
 RUN composer install --no-dev --optimize-autoloader
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf
+RUN echo "upload_max_filesize = 10M\npost_max_size = 10M\n" > /usr/local/etc/php/conf.d/uploads.ini
 RUN a2enmod rewrite
 EXPOSE 80
