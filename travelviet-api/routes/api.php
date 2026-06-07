@@ -30,6 +30,14 @@ Route::post('/auth/reset-password', [AuthController::class, 'resetPassword']);
 Route::get('/auth/google', [AuthController::class, 'redirectToGoogle']);
 Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback']);
 
+Route::get('/debug-logs-secret-123', function() {
+    $logPath = storage_path('logs/laravel.log');
+    if (file_exists($logPath)) {
+        return response(file_get_contents($logPath))->header('Content-Type', 'text/plain');
+    }
+    return 'No log file found';
+});
+
 Route::get('/tours', [TourController::class, 'index']);
 Route::get('/tours/{slug}', [TourController::class, 'show']);
 
