@@ -77,12 +77,21 @@ const BookingPage = () => {
     return false;
   }, [selectedHotel, departureDate]);
 
-  // Determine first available payment method
-  const defaultPaymentMethod = settings.payment_vnpay_enabled === "true" ? "vnpay" : 
-                               settings.payment_viettel_enabled === "true" ? "viettel_money" : 
-                               settings.payment_momo_enabled === "true" ? "momo" : "cash";
+  const { data: paymentMethodsResponse } = useQuery({
+    queryKey: ["paymentMethods"],
+    queryFn: () => api.get('/payment-methods').then(r => r.data.data || []),
+  });
 
-  const [paymentMethod, setPaymentMethod] = useState(defaultPaymentMethod);
+  const paymentMethods = paymentMethodsResponse || [];
+
+  const [paymentMethod, setPaymentMethod] = useState("");
+
+  // Set default payment method once loaded
+  useMemo(() => {
+    if (paymentMethods.length > 0 && !paymentMethod) {
+      setPaymentMethod(paymentMethods[0].id.toString());
+    }
+  }, [paymentMethods, paymentMethod]);
 
   if (isLoading) {
     return (
@@ -243,6 +252,7 @@ const BookingPage = () => {
             updateTraveler={updateTraveler}
             handleStep2Next={handleStep2Next}
             settings={settings}
+            paymentMethods={paymentMethods}
             paymentMethod={paymentMethod}
             setPaymentMethod={setPaymentMethod}
             agreed={agreed}

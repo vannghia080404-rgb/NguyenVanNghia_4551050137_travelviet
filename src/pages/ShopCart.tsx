@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
-import { Trash2, ShoppingBag, ArrowRight } from "lucide-react";
+import { Trash2, ShoppingBag, ArrowRight, Plus, Minus, Loader2 } from "lucide-react";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -23,6 +23,14 @@ export default function Cart() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cart"] });
     },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: (data: { id: number, quantity: number }) => api.put(`/shop/cart/${data.id}`, { quantity: data.quantity }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
+    },
+    onError: () => toast.error("Không thể cập nhật số lượng.")
   });
 
   if (!user) {
@@ -73,11 +81,33 @@ export default function Cart() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <Link to={`/shop/${p.slug}`} className="font-semibold text-lg hover:text-primary transition-colors line-clamp-1">{p.name}</Link>
-                      <div className="text-sm text-muted-foreground mt-1">Phân loại: {v.size} - {v.color}</div>
-                      <div className="font-bold text-primary mt-2">{new Intl.NumberFormat("vi-VN").format(unitPrice)}đ <span className="text-muted-foreground font-normal text-sm">x {item.quantity}</span></div>
+                      <div className="text-sm text-muted-foreground mt-1 mb-3">Phân loại: {v.size} - {v.color}</div>
+                      
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center border border-border rounded-lg bg-background w-fit overflow-hidden">
+                          <button 
+                            disabled={item.quantity <= 1 || updateMutation.isPending}
+                            onClick={() => updateMutation.mutate({ id: item.id, quantity: item.quantity - 1 })}
+                            className="w-8 h-8 flex items-center justify-center hover:bg-secondary disabled:opacity-50 transition-colors"
+                          >
+                            <Minus className="h-3 w-3" />
+                          </button>
+                          <div className="w-10 h-8 flex items-center justify-center text-sm font-medium border-x border-border">
+                            {updateMutation.isPending && updateMutation.variables?.id === item.id ? <Loader2 className="h-3 w-3 animate-spin" /> : item.quantity}
+                          </div>
+                          <button 
+                            disabled={item.quantity >= v.stock || updateMutation.isPending}
+                            onClick={() => updateMutation.mutate({ id: item.id, quantity: item.quantity + 1 })}
+                            className="w-8 h-8 flex items-center justify-center hover:bg-secondary disabled:opacity-50 transition-colors"
+                          >
+                            <Plus className="h-3 w-3" />
+                          </button>
+                        </div>
+                        <div className="text-xs text-muted-foreground">Kho: {v.stock}</div>
+                      </div>
                     </div>
-                    <div className="shrink-0 flex flex-col items-end gap-2">
-                      <div className="font-bold text-lg">{new Intl.NumberFormat("vi-VN").format(unitPrice * item.quantity)}đ</div>
+                    <div className="shrink-0 flex flex-col items-end justify-between h-full py-1">
+                      <div className="font-bold text-lg text-primary">{new Intl.NumberFormat("vi-VN").format(unitPrice * item.quantity)}đ</div>
                       <Button variant="ghost" size="sm" className="text-destructive hover:bg-destructive/10 hover:text-destructive h-8 px-2" onClick={() => removeMutation.mutate(item.id)}>
                         <Trash2 className="h-4 w-4 mr-1" /> Xóa
                       </Button>

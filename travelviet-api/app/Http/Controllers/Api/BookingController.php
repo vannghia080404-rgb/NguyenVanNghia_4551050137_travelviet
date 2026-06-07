@@ -20,7 +20,7 @@ class BookingController extends Controller
             'tour_id' => 'required|exists:tours,id',
             'departure_date' => 'required|date',
             'num_people' => 'required|integer|min:1',
-            'payment_method' => 'required|in:vnpay,momo,viettel_money,cash,bank_transfer',
+            'payment_method' => 'required',
             'travelers' => 'required|array|min:1',
             'travelers.*.full_name' => 'required|string',
             'travelers.*.id_card' => 'required|string',

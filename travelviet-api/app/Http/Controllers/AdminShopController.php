@@ -114,16 +114,45 @@ class AdminShopController extends Controller
     // Shop Order Management
     public function getOrders()
     {
-        $orders = \App\Models\ShopOrder::with(['user', 'items.variant.product'])->orderBy('id', 'desc')->get();
+        $orders = \App\Models\ShopOrder::with(['user', 'items.variant.product', 'trackings', 'paymentMethod'])->orderBy('id', 'desc')->get();
         return response()->json(['success' => true, 'data' => $orders]);
     }
 
     public function updateOrderStatus(Request $request, $id)
     {
-        $request->validate(['status' => 'required|in:pending,shipping,completed,cancelled']);
+        $request->validate(['status' => 'required|in:pending,preparing,shipping,completed,cancelled']);
         $order = \App\Models\ShopOrder::findOrFail($id);
         $order->status = $request->status;
         $order->save();
         return response()->json(['success' => true]);
+    }
+
+    public function addTracking(Request $request, $id)
+    {
+        $request->validate([
+            'title' => 'required|string',
+            'description' => 'nullable|string',
+            'location' => 'nullable|string',
+            'image' => 'nullable|image|max:5120'
+        ]);
+
+        $order = \App\Models\ShopOrder::findOrFail($id);
+        
+        $imageUrl = null;
+        if ($request->hasFile('image')) {
+            $uploadedFileUrl = \CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary::upload($request->file('image')->getRealPath(), [
+                'folder' => 'travelviet/trackings',
+            ])->getSecurePath();
+            $imageUrl = $uploadedFileUrl;
+        }
+
+        $tracking = $order->trackings()->create([
+            'title' => $request->title,
+            'description' => $request->description,
+            'location' => $request->location,
+            'image_url' => $imageUrl
+        ]);
+
+        return response()->json(['success' => true, 'data' => $tracking]);
     }
 }

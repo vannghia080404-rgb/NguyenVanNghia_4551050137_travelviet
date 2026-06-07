@@ -50,6 +50,7 @@ class SettingController extends Controller
             'stat_happy_customers' => '15.000+',
             'stat_destinations' => $destinationsCount . '+',
             'stat_rating' => round($averageRating, 1) . '/5',
+            'shop_shipping_fee' => '30000',
         ];
 
         return response()->json([

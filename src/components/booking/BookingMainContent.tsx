@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
 import { Hotel } from "@/components/HotelSelector";
+import { cn } from "@/lib/utils";
 
 interface BookingMainContentProps {
   step: number;
@@ -20,6 +21,7 @@ interface BookingMainContentProps {
   updateTraveler: (index: number, field: any, value: string) => void;
   handleStep2Next: () => void;
   settings: any;
+  paymentMethods: any[];
   paymentMethod: string;
   setPaymentMethod: (method: string) => void;
   agreed: boolean;
@@ -43,6 +45,7 @@ const BookingMainContent = ({
   updateTraveler,
   handleStep2Next,
   settings,
+  paymentMethods,
   paymentMethod,
   setPaymentMethod,
   agreed,
@@ -249,49 +252,36 @@ const BookingMainContent = ({
           <div className="bg-card rounded-2xl border border-border/50 shadow-soft p-6 md:p-8">
             <h3 className="font-display font-semibold text-foreground mb-4">Phương thức thanh toán</h3>
             <div className="space-y-3">
-              {settings.payment_vnpay_enabled === "true" && (
-                <label className="flex items-center gap-3 p-4 rounded-xl border-2 border-border cursor-pointer hover:border-primary/40 transition-smooth"
-                       style={paymentMethod === 'vnpay' ? { borderColor: 'var(--primary)', backgroundColor: 'var(--primary-foreground)' } : {}}>
-                  <input type="radio" name="payment" value="vnpay" checked={paymentMethod === 'vnpay'} onChange={() => setPaymentMethod('vnpay')} className="accent-primary" />
-                  <div className="h-8 w-12 rounded-md bg-sky-600 text-white text-[10px] font-bold flex items-center justify-center">VNPay</div>
-                  <div>
-                    <div className="font-semibold text-sm text-foreground">VNPay</div>
-                    <div className="text-xs text-muted-foreground">Thanh toán qua cổng VNPay (ATM, Visa, QR)</div>
-                  </div>
-                </label>
-              )}
-              {settings.payment_viettel_enabled === "true" && (
-                <label className="flex items-center gap-3 p-4 rounded-xl border-2 border-border cursor-pointer hover:border-primary/40 transition-smooth"
-                       style={paymentMethod === 'viettel_money' ? { borderColor: 'var(--primary)', backgroundColor: 'var(--primary-foreground)' } : {}}>
-                  <input type="radio" name="payment" value="viettel_money" checked={paymentMethod === 'viettel_money'} onChange={() => setPaymentMethod('viettel_money')} className="accent-primary" />
-                  <div className="h-8 w-14 rounded-md bg-red-600 text-white text-[10px] font-bold flex flex-col items-center justify-center leading-[10px] shrink-0"><span>Viettel</span><span>Money</span></div>
-                  <div>
-                    <div className="font-semibold text-sm text-foreground">Chuyển khoản / Quét mã QR</div>
-                    <div className="text-xs text-muted-foreground">Chuyển tiền qua Viettel Money hoặc App Ngân hàng</div>
-                  </div>
-                </label>
-              )}
-              {settings.payment_momo_enabled === "true" && (
-                <label className="flex items-center gap-3 p-4 rounded-xl border-2 border-border cursor-pointer hover:border-primary/40 transition-smooth"
-                       style={paymentMethod === 'momo' ? { borderColor: 'var(--primary)', backgroundColor: 'var(--primary-foreground)' } : {}}>
-                  <input type="radio" name="payment" value="momo" checked={paymentMethod === 'momo'} onChange={() => setPaymentMethod('momo')} className="accent-primary" />
-                  <div className="h-8 w-12 rounded-md bg-pink-600 text-white text-[10px] font-bold flex items-center justify-center">MoMo</div>
-                  <div>
-                    <div className="font-semibold text-sm text-foreground">Ví điện tử MoMo</div>
-                    <div className="text-xs text-muted-foreground">Thanh toán nhanh chóng qua ứng dụng MoMo</div>
-                  </div>
-                </label>
-              )}
-              {settings.payment_cash_enabled === "true" && (
-                <label className="flex items-center gap-3 p-4 rounded-xl border-2 border-border cursor-pointer hover:border-primary/40 transition-smooth"
-                       style={paymentMethod === 'cash' ? { borderColor: 'var(--primary)', backgroundColor: 'var(--primary-foreground)' } : {}}>
-                  <input type="radio" name="payment" value="cash" checked={paymentMethod === 'cash'} onChange={() => setPaymentMethod('cash')} className="accent-primary" />
-                  <div className="h-8 w-12 rounded-md bg-green-600 text-white text-[10px] font-bold flex items-center justify-center">Cash</div>
-                  <div>
-                    <div className="font-semibold text-sm text-foreground">Thanh toán tiền mặt</div>
-                    <div className="text-xs text-muted-foreground">Thanh toán trực tiếp tại văn phòng công ty</div>
-                  </div>
-                </label>
+              {paymentMethods.length > 0 ? (
+                paymentMethods.map((method) => (
+                  <label key={method.id} className="flex items-center gap-3 p-4 rounded-xl border-2 border-border cursor-pointer hover:border-primary/40 transition-smooth"
+                         style={paymentMethod === method.id.toString() ? { borderColor: 'var(--primary)', backgroundColor: 'var(--primary-foreground)' } : {}}>
+                    <input 
+                      type="radio" 
+                      name="payment" 
+                      value={method.id.toString()} 
+                      checked={paymentMethod === method.id.toString()} 
+                      onChange={() => setPaymentMethod(method.id.toString())} 
+                      className="accent-primary" 
+                    />
+                    <div className={cn(
+                      "h-10 w-16 rounded-md flex items-center justify-center shrink-0 border",
+                      !method.qr_code_url && "bg-secondary text-secondary-foreground"
+                    )}>
+                      {method.qr_code_url ? (
+                        <img src={method.qr_code_url} alt={method.name} className="h-full w-full object-cover rounded-md" />
+                      ) : (
+                        <CreditCard className="w-5 h-5 opacity-50" />
+                      )}
+                    </div>
+                    <div>
+                      <div className="font-semibold text-sm text-foreground">{method.name}</div>
+                      <div className="text-xs text-muted-foreground line-clamp-1">{method.description || (method.type === 'bank_transfer' ? 'Chuyển khoản ngân hàng' : method.type === 'e_wallet' ? 'Ví điện tử' : 'Tiền mặt')}</div>
+                    </div>
+                  </label>
+                ))
+              ) : (
+                <div className="text-sm text-muted-foreground p-4 border rounded-xl text-center">Chưa có phương thức thanh toán nào khả dụng.</div>
               )}
             </div>
           </div>

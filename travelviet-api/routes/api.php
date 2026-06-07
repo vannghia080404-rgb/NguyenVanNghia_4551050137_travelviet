@@ -66,9 +66,12 @@ Route::middleware('auth:sanctum')->group(function () {
     // Shop Cart & Checkout (User)
     Route::get('/shop/cart', [\App\Http\Controllers\ShopController::class, 'getCart']);
     Route::post('/shop/cart', [\App\Http\Controllers\ShopController::class, 'addToCart']);
+    Route::put('/shop/cart/{id}', [\App\Http\Controllers\ShopController::class, 'updateCartItem']);
     Route::delete('/shop/cart/{id}', [\App\Http\Controllers\ShopController::class, 'removeFromCart']);
     Route::post('/shop/checkout', [\App\Http\Controllers\ShopController::class, 'checkout']);
+    Route::post('/shop/check-voucher', [\App\Http\Controllers\ShopController::class, 'checkVoucher']);
     Route::get('/shop/orders', [\App\Http\Controllers\ShopController::class, 'getOrders']);
+    Route::post('/shop/orders/{id}/receipt', [\App\Http\Controllers\ShopController::class, 'uploadReceipt']);
 
     // Wishlist
     Route::get('/wishlist', [WishlistController::class, 'index']);
@@ -148,6 +151,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/payment-methods/{id}', [\App\Http\Controllers\Api\Admin\PaymentMethodController::class, 'update']);
         Route::delete('/payment-methods/{id}', [\App\Http\Controllers\Api\Admin\PaymentMethodController::class, 'destroy']);
 
+        // Vouchers Management
+        Route::get('/vouchers', [\App\Http\Controllers\Api\Admin\AdminVoucherController::class, 'index']);
+        Route::post('/vouchers', [\App\Http\Controllers\Api\Admin\AdminVoucherController::class, 'store']);
+        Route::put('/vouchers/{id}', [\App\Http\Controllers\Api\Admin\AdminVoucherController::class, 'update']);
+        Route::delete('/vouchers/{id}', [\App\Http\Controllers\Api\Admin\AdminVoucherController::class, 'destroy']);
+
         // Category Management (Admin)
         Route::get('/categories', [\App\Http\Controllers\Api\Admin\CategoryController::class, 'index']);
         Route::post('/categories', [\App\Http\Controllers\Api\Admin\CategoryController::class, 'store']);
@@ -183,5 +192,6 @@ Route::middleware('auth:sanctum')->group(function () {
         
         Route::get('/shop/orders', [\App\Http\Controllers\AdminShopController::class, 'getOrders']);
         Route::put('/shop/orders/{id}/status', [\App\Http\Controllers\AdminShopController::class, 'updateOrderStatus']);
+        Route::post('/shop/orders/{id}/trackings', [\App\Http\Controllers\AdminShopController::class, 'addTracking']);
     });
 });

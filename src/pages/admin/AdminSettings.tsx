@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Save, Settings, Phone, MapPin, Share2, CreditCard, FileText } from "lucide-react";
+import { Save, Settings, Phone, MapPin, Share2, CreditCard, FileText, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -36,6 +36,7 @@ export default function AdminSettings() {
     page_faq: "",
     stat_experience_years: "10+",
     stat_happy_customers: "15.000+",
+    shop_shipping_fee: "30000",
   });
 
   useEffect(() => {
@@ -192,6 +193,13 @@ export default function AdminSettings() {
                 <label className="text-sm font-medium text-foreground/80">Số lượng khách hàng</label>
                 <Input name="stat_happy_customers" className="bg-background text-foreground border-border mt-1" value={settings.stat_happy_customers || ""} onChange={handleChange} placeholder="VD: 15.000+" />
               </div>
+            </div>
+            <div className="mt-4 pt-4 border-t border-border/50">
+              <label className="text-sm font-medium text-foreground/80 flex items-center gap-2">
+                <Package className="h-4 w-4" /> Phí vận chuyển mặc định (Shop)
+              </label>
+              <Input type="number" name="shop_shipping_fee" className="bg-background text-foreground border-border mt-1 w-full sm:w-1/2" value={settings.shop_shipping_fee || ""} onChange={handleChange} placeholder="VD: 30000" />
+              <p className="text-[10px] text-muted-foreground mt-1">Phí vận chuyển sẽ được áp dụng cho phương thức Giao hàng tận nơi.</p>
             </div>
             <p className="text-xs text-muted-foreground mt-3"></p>
           </div>

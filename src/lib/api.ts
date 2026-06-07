@@ -165,3 +165,26 @@ export const loyaltyAPIs = {
   updatePromotion: (id: number, data: any) => api.put(`/admin/promotions/${id}`, data),
   deletePromotion: (id: number) => api.delete(`/admin/promotions/${id}`),
 };
+
+// ============ Payment Method APIs ============
+export const paymentAPIs = {
+  // Public
+  getPublicPaymentMethods: () => api.get('/payment-methods'),
+  
+  // Admin
+  getPaymentMethods: () => api.get('/admin/payment-methods'),
+  createPaymentMethod: (data: any) => api.post('/admin/payment-methods', data, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  updatePaymentMethod: (id: number, data: any) => {
+    // When using multipart/form-data with PUT in Laravel, it often requires POST with _method=PUT
+    if (data instanceof FormData) {
+      data.append('_method', 'PUT');
+      return api.post(`/admin/payment-methods/${id}`, data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+    }
+    return api.put(`/admin/payment-methods/${id}`, data);
+  },
+  deletePaymentMethod: (id: number) => api.delete(`/admin/payment-methods/${id}`),
+};

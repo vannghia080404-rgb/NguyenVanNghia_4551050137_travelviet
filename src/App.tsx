@@ -46,8 +46,10 @@ import AdminSettings from "./pages/admin/AdminSettings.tsx";
 import AdminTeamMembers from "./pages/admin/AdminTeamMembers.tsx";
 import AdminRanks from "./pages/admin/AdminRanks.tsx";
 import AdminPromotions from "./pages/admin/AdminPromotions.tsx";
+import AdminVouchers from "./pages/admin/AdminVouchers.tsx";
 import AdminProducts from "./pages/admin/AdminProducts.tsx";
 import AdminShopOrders from "./pages/admin/AdminShopOrders.tsx";
+import AdminPaymentMethods from "./pages/admin/AdminPaymentMethods.tsx";
 import AdminProfile from "./pages/admin/AdminProfile.tsx";
 import Shop from "./pages/Shop.tsx";
 import ShopProductDetail from "./pages/ShopProductDetail.tsx";
@@ -133,9 +135,11 @@ const AnimatedRoutes = () => {
         <Route path="/admin/broadcast" element={<motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}><RenderedRoute><ProtectedRoute requireAdmin><AdminBroadcast /></ProtectedRoute></RenderedRoute></motion.div>} />
         <Route path="/admin/ranks" element={<motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}><RenderedRoute><ProtectedRoute requireAdmin><AdminRanks /></ProtectedRoute></RenderedRoute></motion.div>} />
         <Route path="/admin/promotions" element={<motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}><RenderedRoute><ProtectedRoute requireAdmin><AdminPromotions /></ProtectedRoute></RenderedRoute></motion.div>} />
+        <Route path="/admin/vouchers" element={<motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}><RenderedRoute><ProtectedRoute requireAdmin><AdminVouchers /></ProtectedRoute></RenderedRoute></motion.div>} />
         <Route path="/admin/settings" element={<motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}><RenderedRoute><ProtectedRoute requireAdmin><AdminSettings /></ProtectedRoute></RenderedRoute></motion.div>} />
         <Route path="/admin/team" element={<motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}><RenderedRoute><ProtectedRoute requireAdmin><AdminTeamMembers /></ProtectedRoute></RenderedRoute></motion.div>} />
         <Route path="/admin/profile" element={<motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}><RenderedRoute><ProtectedRoute requireAdmin><AdminProfile /></ProtectedRoute></RenderedRoute></motion.div>} />
+        <Route path="/admin/payment-methods" element={<motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}><RenderedRoute><ProtectedRoute requireAdmin><AdminPaymentMethods /></ProtectedRoute></RenderedRoute></motion.div>} />
         <Route path="*" element={<motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}><RenderedRoute><NotFound /></RenderedRoute></motion.div>} />
       </Routes>
     </AnimatePresence>
