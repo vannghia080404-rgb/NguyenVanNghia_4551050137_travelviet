@@ -13,6 +13,8 @@ type ProductVariant = {
   color: string;
   price_modifier: number;
   stock: number;
+  image_url?: string;
+  image_file?: File;
 };
 
 type Product = {
@@ -47,8 +49,21 @@ export default function AdminProducts() {
     mutationFn: async (data: { form: typeof emptyForm; variants: ProductVariant[]; id?: number }) => {
       const fd = new FormData();
       Object.entries(data.form).forEach(([k, v]) => fd.append(k, String(v)));
-      fd.append("variants", JSON.stringify(data.variants));
+      
+      const variantsData = data.variants.map(v => {
+        const { image_file, ...rest } = v;
+        return rest;
+      });
+      fd.append("variants", JSON.stringify(variantsData));
+      
       if (imageFile) fd.append("image", imageFile);
+      
+      data.variants.forEach((v, index) => {
+        if (v.image_file) {
+          fd.append(`variant_image_${index}`, v.image_file);
+        }
+      });
+
       if (data.id) {
         fd.append("_method", "PUT");
         return api.post(`/admin/shop/products/${data.id}`, fd, { headers: { "Content-Type": "multipart/form-data" } });
@@ -102,9 +117,13 @@ export default function AdminProducts() {
     setVariants([...variants, { size: "Free size", color: "Mặc định", price_modifier: 0, stock: 10 }]);
   };
 
-  const updateVariant = (index: number, field: keyof ProductVariant, value: string | number) => {
+  const updateVariant = (index: number, field: keyof ProductVariant, value: any) => {
     const newVariants = [...variants];
     newVariants[index] = { ...newVariants[index], [field]: value };
+    // if a new file is added, create a preview url to show temporarily
+    if (field === 'image_file' && value instanceof File) {
+      newVariants[index].image_url = URL.createObjectURL(value);
+    }
     setVariants(newVariants);
   };
 
@@ -176,6 +195,17 @@ export default function AdminProducts() {
                 </div>
                 {variants.map((v, i) => (
                   <div key={i} className="flex gap-2 mb-2 items-center bg-secondary/30 p-2 rounded-lg border border-border/50">
+                    <label className="h-8 w-8 rounded-md border border-border bg-background overflow-hidden flex items-center justify-center cursor-pointer shrink-0 hover:border-primary">
+                      {v.image_url ? (
+                        <img src={v.image_url.startsWith('blob:') ? v.image_url : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8000'}${v.image_url}`} alt="var" className="h-full w-full object-cover" />
+                      ) : (
+                        <ImagePlus className="h-4 w-4 text-muted-foreground/50" />
+                      )}
+                      <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) updateVariant(i, 'image_file', file);
+                      }} />
+                    </label>
                     <Input className="h-8 text-xs" placeholder="Size (S, M...)" value={v.size} onChange={e => updateVariant(i, 'size', e.target.value)} />
                     <Input className="h-8 text-xs w-20" placeholder="Màu" value={v.color} onChange={e => updateVariant(i, 'color', e.target.value)} />
                     <Input type="number" className="h-8 text-xs w-20" placeholder="Kho" value={v.stock} onChange={e => updateVariant(i, 'stock', parseInt(e.target.value) || 0)} />
@@ -242,7 +272,10 @@ export default function AdminProducts() {
                       
                       <div className="mt-3 flex flex-wrap gap-2">
                         {product.variants?.map((v, idx) => (
-                          <div key={idx} className="text-xs bg-background border border-border rounded-md px-2 py-1 flex gap-1">
+                          <div key={idx} className="text-xs bg-background border border-border rounded-md px-2 py-1 flex items-center gap-1.5">
+                            {v.image_url && (
+                              <img src={`${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8000'}${v.image_url}`} alt="variant" className="h-4 w-4 rounded-full object-cover" />
+                            )}
                             <span className="font-medium text-foreground">{v.size}</span>
                             <span className="text-muted-foreground">({v.color})</span>
                             <span className="text-success ml-1">Kho: {v.stock}</span>

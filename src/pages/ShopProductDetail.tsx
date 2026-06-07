@@ -71,8 +71,12 @@ export default function ShopProductDetail() {
         <div className="grid md:grid-cols-2 gap-10">
           {/* Image Gallery */}
           <div className="bg-card rounded-3xl overflow-hidden border border-border/50 aspect-[4/5] md:aspect-square relative flex items-center justify-center">
-            {product.image_url ? (
-              <img src={`${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8000'}${product.image_url}`} alt={product.name} className="w-full h-full object-cover" />
+            {(selectedVariant?.image_url || product.image_url) ? (
+              <img 
+                src={`${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8000'}${selectedVariant?.image_url || product.image_url}`} 
+                alt={product.name} 
+                className="w-full h-full object-cover transition-opacity duration-300" 
+              />
             ) : (
               <Package className="h-32 w-32 opacity-10" />
             )}
@@ -112,6 +116,13 @@ export default function ShopProductDetail() {
                       >
                         {isSelected && <CheckCircle2 className="absolute top-1 right-1 h-3 w-3 text-primary" />}
                         <div className="flex items-center gap-2">
+                          {v.image_url && (
+                            <img 
+                              src={`${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8000'}${v.image_url}`} 
+                              alt="var" 
+                              className="h-6 w-6 rounded-md object-cover border border-border shrink-0"
+                            />
+                          )}
                           <span>{v.size}</span>
                           <span className="opacity-50">|</span>
                           <span>{v.color}</span>

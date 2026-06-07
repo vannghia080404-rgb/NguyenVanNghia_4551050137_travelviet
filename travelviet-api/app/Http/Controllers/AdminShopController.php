@@ -32,7 +32,11 @@ class AdminShopController extends Controller
         
         if ($request->has('variants')) {
             $variants = json_decode($request->variants, true);
-            foreach($variants as $v) {
+            foreach($variants as $index => $v) {
+                if ($request->hasFile("variant_image_{$index}")) {
+                    $path = $request->file("variant_image_{$index}")->store('shop/variants', 'public');
+                    $v['image_url'] = '/storage/' . $path;
+                }
                 $product->variants()->create($v);
             }
         }
@@ -55,8 +59,13 @@ class AdminShopController extends Controller
         if ($request->has('variants')) {
             $variants = json_decode($request->variants, true);
             // Quick sync: delete old and create new
+            // Note: to preserve existing images if no new file is uploaded, we'll check if the $v['image_url'] is passed from frontend
             $product->variants()->delete();
-            foreach($variants as $v) {
+            foreach($variants as $index => $v) {
+                if ($request->hasFile("variant_image_{$index}")) {
+                    $path = $request->file("variant_image_{$index}")->store('shop/variants', 'public');
+                    $v['image_url'] = '/storage/' . $path;
+                }
                 $product->variants()->create($v);
             }
         }
