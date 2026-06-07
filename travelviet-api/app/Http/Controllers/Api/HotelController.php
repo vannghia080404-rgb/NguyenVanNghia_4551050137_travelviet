@@ -90,9 +90,9 @@ class HotelController extends Controller
         // Handle image upload
         if ($request->hasFile('image')) {
             $file = $request->file('image');
-            $imagePath = cloudinary()->upload($file->getRealPath(), [
+            $imagePath = cloudinary()->uploadApi()->upload($file->getRealPath(), [
                 'folder' => 'travelviet/hotels'
-            ])->getSecurePath();
+            ])['secure_url'];
             $data['image'] = $imagePath;
         }
 
@@ -162,9 +162,9 @@ class HotelController extends Controller
         if ($request->hasFile('image')) {
             // Ignore local delete
             $file = $request->file('image');
-            $imagePath = cloudinary()->upload($file->getRealPath(), [
+            $imagePath = cloudinary()->uploadApi()->upload($file->getRealPath(), [
                 'folder' => 'travelviet/hotels'
-            ])->getSecurePath();
+            ])['secure_url'];
             $data['image'] = $imagePath;
         }
 

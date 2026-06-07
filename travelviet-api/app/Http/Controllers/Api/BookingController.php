@@ -307,9 +307,9 @@ class BookingController extends Controller
             $file = $request->file('receipt');
             
             // Upload to Cloudinary
-            $uploadedUrl = cloudinary()->upload($file->getRealPath(), [
+            $uploadedUrl = cloudinary()->uploadApi()->upload($file->getRealPath(), [
                 'folder' => 'travelviet/receipts'
-            ])->getSecurePath();
+            ])['secure_url'];
 
             $booking->update([
                 'payment_receipt' => $uploadedUrl,

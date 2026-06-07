@@ -25,9 +25,9 @@ class AdminShopController extends Controller
         
         if ($request->hasFile('image')) {
             $file = $request->file('image');
-            $data['image_url'] = cloudinary()->upload($file->getRealPath(), [
+            $data['image_url'] = cloudinary()->uploadApi()->upload($file->getRealPath(), [
                 'folder' => 'travelviet/shop'
-            ])->getSecurePath();
+            ])['secure_url'];
         }
 
         $product = \App\Models\Product::create($data);
@@ -37,9 +37,9 @@ class AdminShopController extends Controller
             foreach($variants as $index => $v) {
                 if ($request->hasFile("variant_image_{$index}")) {
                     $file = $request->file("variant_image_{$index}");
-                    $v['image_url'] = cloudinary()->upload($file->getRealPath(), [
+                    $v['image_url'] = cloudinary()->uploadApi()->upload($file->getRealPath(), [
                         'folder' => 'travelviet/shop/variants'
-                    ])->getSecurePath();
+                    ])['secure_url'];
                 }
                 $product->variants()->create($v);
             }
@@ -47,9 +47,9 @@ class AdminShopController extends Controller
 
         if ($request->hasFile('gallery_images')) {
             foreach($request->file('gallery_images') as $file) {
-                $url = cloudinary()->upload($file->getRealPath(), [
+                $url = cloudinary()->uploadApi()->upload($file->getRealPath(), [
                     'folder' => 'travelviet/shop/gallery'
-                ])->getSecurePath();
+                ])['secure_url'];
                 $product->images()->create(['image_url' => $url]);
             }
         }
@@ -64,9 +64,9 @@ class AdminShopController extends Controller
         $data = $request->except(['image', 'variants', 'deleted_images', 'gallery_images']);
         if ($request->hasFile('image')) {
             $file = $request->file('image');
-            $data['image_url'] = cloudinary()->upload($file->getRealPath(), [
+            $data['image_url'] = cloudinary()->uploadApi()->upload($file->getRealPath(), [
                 'folder' => 'travelviet/shop'
-            ])->getSecurePath();
+            ])['secure_url'];
         }
         
         $product->update($data);
@@ -79,9 +79,9 @@ class AdminShopController extends Controller
             foreach($variants as $index => $v) {
                 if ($request->hasFile("variant_image_{$index}")) {
                     $file = $request->file("variant_image_{$index}");
-                    $v['image_url'] = cloudinary()->upload($file->getRealPath(), [
+                    $v['image_url'] = cloudinary()->uploadApi()->upload($file->getRealPath(), [
                         'folder' => 'travelviet/shop/variants'
-                    ])->getSecurePath();
+                    ])['secure_url'];
                 }
                 $product->variants()->create($v);
             }
@@ -94,9 +94,9 @@ class AdminShopController extends Controller
 
         if ($request->hasFile('gallery_images')) {
             foreach($request->file('gallery_images') as $file) {
-                $url = cloudinary()->upload($file->getRealPath(), [
+                $url = cloudinary()->uploadApi()->upload($file->getRealPath(), [
                     'folder' => 'travelviet/shop/gallery'
-                ])->getSecurePath();
+                ])['secure_url'];
                 $product->images()->create(['image_url' => $url]);
             }
         }

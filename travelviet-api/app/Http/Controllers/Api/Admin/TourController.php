@@ -96,9 +96,9 @@ class TourController extends Controller
             $imagePath = null;
             if ($request->hasFile('image')) {
                 $file = $request->file('image');
-                $imagePath = cloudinary()->upload($file->getRealPath(), [
+                $imagePath = cloudinary()->uploadApi()->upload($file->getRealPath(), [
                     'folder' => 'travelviet/tours'
-                ])->getSecurePath();
+                ])['secure_url'];
             }
 
             $slug = Str::slug($request->name);
@@ -151,9 +151,9 @@ class TourController extends Controller
             // Upload gallery images
             if ($request->hasFile('gallery')) {
                 foreach ($request->file('gallery') as $file) {
-                    $gPath = cloudinary()->upload($file->getRealPath(), [
+                    $gPath = cloudinary()->uploadApi()->upload($file->getRealPath(), [
                         'folder' => 'travelviet/gallery'
-                    ])->getSecurePath();
+                    ])['secure_url'];
                     TourImage::create([
                         'tour_id' => $tour->id,
                         'image_path' => $gPath,
@@ -221,9 +221,9 @@ class TourController extends Controller
             if ($request->hasFile('image')) {
                 // Ignore local delete for now
                 $file = $request->file('image');
-                $imagePath = cloudinary()->upload($file->getRealPath(), [
+                $imagePath = cloudinary()->uploadApi()->upload($file->getRealPath(), [
                     'folder' => 'travelviet/tours'
-                ])->getSecurePath();
+                ])['secure_url'];
                 $tour->image = $imagePath;
             }
 
@@ -279,9 +279,9 @@ class TourController extends Controller
             // Upload new gallery images
             if ($request->hasFile('gallery')) {
                 foreach ($request->file('gallery') as $file) {
-                    $gPath = cloudinary()->upload($file->getRealPath(), [
+                    $gPath = cloudinary()->uploadApi()->upload($file->getRealPath(), [
                         'folder' => 'travelviet/gallery'
-                    ])->getSecurePath();
+                    ])['secure_url'];
                     TourImage::create([
                         'tour_id' => $tour->id,
                         'image_path' => $gPath,
@@ -356,9 +356,9 @@ class TourController extends Controller
             $uploadedImages = [];
 
             foreach ($request->file('images') as $file) {
-                $imagePath = cloudinary()->upload($file->getRealPath(), [
+                $imagePath = cloudinary()->uploadApi()->upload($file->getRealPath(), [
                     'folder' => 'travelviet/gallery'
-                ])->getSecurePath();
+                ])['secure_url'];
 
                 $tourImage = TourImage::create([
                     'tour_id' => $tour->id,

@@ -272,9 +272,9 @@ class AuthController extends Controller
         // Ignore local delete
         
         $file = $request->file('avatar');
-        $imagePath = cloudinary()->upload($file->getRealPath(), [
+        $imagePath = cloudinary()->uploadApi()->upload($file->getRealPath(), [
             'folder' => 'travelviet/avatars'
-        ])->getSecurePath();
+        ])['secure_url'];
         
         $user->update(['avatar' => $imagePath]);
         
