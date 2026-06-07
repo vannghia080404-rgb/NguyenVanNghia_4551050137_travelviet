@@ -294,10 +294,10 @@ class TourController extends Controller
                 'message' => 'Tour updated successfully',
                 'data' => $tour->load(['destination', 'category', 'images'])
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error updating tour: ' . $e->getMessage()
+                'message' => 'Error updating tour (FATAL): ' . $e->getMessage() . ' at ' . $e->getFile() . ':' . $e->getLine()
             ], 500);
         }
     }
